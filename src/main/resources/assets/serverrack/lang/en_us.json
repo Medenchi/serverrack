@@ -1,0 +1,13 @@
+{
+  "block.serverrack.server_rack_basic": "Server Rack - Small",
+  "block.serverrack.server_rack_advanced": "Server Rack - Big",
+  "block.serverrack.server_rack_mainframe": "Server Rack - Mainframe",
+  "itemGroup.serverrack.server_racks": "Server Racks",
+  "key.serverrack.toggle": "Toggle Server Rack",
+  "key.serverrack.menu": "Smoke Config Menu",
+  "category.serverrack": "Server Rack",
+  "screen.serverrack.smoke_config": "Smoke Configuration",
+  "button.serverrack.save": "Save",
+  "button.serverrack.cancel": "Cancel",
+  "particle.serverrack.ceiling_smoke": "Ceiling Smoke"
+}

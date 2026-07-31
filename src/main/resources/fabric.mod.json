@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "serverrack",
+  "version": "${version}",
+  "name": "Server Rack",
+  "description": "Multiblock server racks with animated LEDs and dynamic smoke that spreads across ceilings. Made by ehalo.",
+  "authors": ["Denchy", "ehalo"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/serverrack/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.denchy.serverrack.ServerRackMod"],
+    "client": ["com.denchy.serverrack.client.ServerRackClient"]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
