@@ -4,6 +4,7 @@ import com.denchy.serverrack.client.render.ServerRackBlockEntityRenderer;
 import com.denchy.serverrack.client.screen.SmokeConfigScreen;
 import com.denchy.serverrack.network.payload.ClearSmokeSyncPayload;
 import com.denchy.serverrack.network.payload.SmokeConfigSyncPayload;
+import com.denchy.serverrack.network.payload.TogglePcPayload;
 import com.denchy.serverrack.network.payload.ToggleRackPayload;
 import com.denchy.serverrack.particle.CeilingSmokeParticle;
 import com.denchy.serverrack.registry.ModBlockEntities;
@@ -30,6 +31,10 @@ public class ServerRackClient implements ClientModInitializer {
 
     public static KeyBinding TOGGLE_KEY;
     public static KeyBinding MENU_KEY;
+    public static KeyBinding PC_ALERT_KEY;
+
+    /** Radius in blocks for J (racks) and Z (PC walls) toggles. */
+    public static final int TOGGLE_RADIUS = 32;
 
     @Override
     public void onInitializeClient() {
@@ -69,6 +74,12 @@ public class ServerRackClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_U,
                 "category.serverrack"
         ));
+        PC_ALERT_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.serverrack.pc_alert",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_Z,
+                "category.serverrack"
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world == null || client.player == null) return;
@@ -76,9 +87,13 @@ public class ServerRackClient implements ClientModInitializer {
             // Tick smoke manager
             CeilingSmokeManager.get(client.world).tick(client.world);
 
-            // Handle toggle key
+            // J = ALL racks in TOGGLE_RADIUS
             while (TOGGLE_KEY.wasPressed()) {
                 handleToggle(client);
+            }
+            // Z = ALL pc walls in TOGGLE_RADIUS -> СЕРВЕРАМ ПИЗДА mode
+            while (PC_ALERT_KEY.wasPressed()) {
+                handlePcAlert(client);
             }
             while (MENU_KEY.wasPressed()) {
                 client.setScreen(new SmokeConfigScreen());
@@ -87,41 +102,48 @@ public class ServerRackClient implements ClientModInitializer {
     }
 
     private void handleToggle(MinecraftClient client) {
-        if (client.player == null) return;
-        HitResult hit = client.crosshairTarget;
-        BlockPos targetPos = null;
+        if (client.player == null || client.world == null) return;
+        BlockPos playerPos = client.player.getBlockPos();
+        int found = countNearby(client, playerPos, true);
 
-        if (hit instanceof BlockHitResult blockHit) {
-            if (blockHit.getType() == HitResult.Type.BLOCK) {
-                BlockPos pos = blockHit.getBlockPos();
-                var state = client.world.getBlockState(pos);
-                if (ModBlocks.isRack(state.getBlock())) {
-                    targetPos = pos;
-                }
-            }
-        }
+        ClientPlayNetworking.send(new ToggleRackPayload(playerPos, TOGGLE_RADIUS));
 
-        // If no rack under crosshair, try near player (within 5 blocks) looking for active racks
-        if (targetPos == null) {
-            BlockPos playerPos = client.player.getBlockPos();
-            double closestDist = 6.0;
-            BlockPos closest = null;
-            for (BlockPos p : BlockPos.iterateOutwards(playerPos, 5, 3, 5)) {
-                var s = client.world.getBlockState(p);
-                if (!ModBlocks.isRack(s.getBlock())) continue;
-                double d = Math.sqrt(p.getSquaredDistance(playerPos));
-                if (d < closestDist) {
-                    closestDist = d;
-                    closest = p.toImmutable();
-                }
-            }
-            targetPos = closest;
-        }
-
-        if (targetPos != null) {
-            ClientPlayNetworking.send(new ToggleRackPayload(targetPos));
+        if (found == 0) {
+            client.player.sendMessage(Text.literal("§c[ServerRack] Стойки не найдены в радиусе " + TOGGLE_RADIUS + " блоков"), true);
         } else {
-            client.player.sendMessage(Text.literal("§c[ServerRack] Стойка не найдена в радиусе 5 блоков"), true);
+            client.player.sendMessage(Text.literal("§7[ServerRack] Стойки в радиусе " + TOGGLE_RADIUS + ": §f" + found), true);
         }
+    }
+
+    private void handlePcAlert(MinecraftClient client) {
+        if (client.player == null || client.world == null) return;
+        BlockPos playerPos = client.player.getBlockPos();
+        int found = countNearby(client, playerPos, false);
+
+        ClientPlayNetworking.send(new TogglePcPayload(playerPos, TOGGLE_RADIUS));
+
+        if (found == 0) {
+            client.player.sendMessage(Text.literal("§c[ServerRack] ПК-стены не найдены в радиусе " + TOGGLE_RADIUS + " блоков"), true);
+        } else {
+            client.player.sendMessage(Text.literal("§4[ServerRack] СЕРВЕРАМ ПИЗДА §c(пк-стен в радиусе " + TOGGLE_RADIUS + ": " + found + ")"), true);
+        }
+    }
+
+    /** Client-side pre-scan so we can show feedback; server does the authoritative pass anyway. */
+    private int countNearby(MinecraftClient client, BlockPos playerPos, boolean racks) {
+        BlockPos min = playerPos.add(-TOGGLE_RADIUS, -TOGGLE_RADIUS, -TOGGLE_RADIUS);
+        BlockPos max = playerPos.add(TOGGLE_RADIUS, TOGGLE_RADIUS, TOGGLE_RADIUS);
+        int count = 0;
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            var s = client.world.getBlockState(p);
+            boolean match = racks ? ModBlocks.isRack(s.getBlock()) : ModBlocks.isPc(s.getBlock());
+            if (!match) continue;
+            if (racks) {
+                var info = ModBlocks.getLowerInfo(s, p);
+                if (info == null || !info.lowerPos().equals(p)) continue; // count each rack once
+            }
+            count++;
+        }
+        return count;
     }
 }

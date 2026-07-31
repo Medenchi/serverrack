@@ -3,6 +3,7 @@ package com.denchy.serverrack.registry;
 import com.denchy.serverrack.ModId;
 import com.denchy.serverrack.block.BigServerRackBlock;
 import com.denchy.serverrack.block.MainframeRackBlock;
+import com.denchy.serverrack.block.PcWallBlock;
 import com.denchy.serverrack.block.ServerRackBlock;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -17,7 +18,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class ModBlocks {
     private ModBlocks() {}
@@ -27,6 +30,7 @@ public final class ModBlocks {
     public static final ServerRackBlock RACK_BASIC = registerSmall("server_rack_basic");
     public static final BigServerRackBlock RACK_ADVANCED = registerBig("server_rack_advanced");
     public static final MainframeRackBlock RACK_MAINFRAME = registerMainframe("server_rack_mainframe");
+    public static final PcWallBlock PC_WALL = registerPcWall("pc_wall");
 
     private static ServerRackBlock registerSmall(String name) {
         AbstractBlock.Settings settings = AbstractBlock.Settings.create()
@@ -76,6 +80,21 @@ public final class ModBlocks {
         return block;
     }
 
+    private static PcWallBlock registerPcWall(String name) {
+        AbstractBlock.Settings settings = AbstractBlock.Settings.create()
+                .mapColor(MapColor.BLACK)
+                .strength(2.5f, 4.0f)
+                .requiresTool()
+                .sounds(BlockSoundGroup.METAL)
+                .nonOpaque()
+                .pistonBehavior(PistonBehavior.BLOCK)
+                .luminance(state -> state.get(PcWallBlock.ALERT) ? 14 : 9);
+        PcWallBlock block = new PcWallBlock(settings);
+        Identifier id = ModId.of(name);
+        Registry.register(Registries.BLOCK, id, block);
+        return block;
+    }
+
     public static void register() {}
 
     public record LowerInfo(BlockPos lowerPos, int height) {}
@@ -94,6 +113,81 @@ public final class ModBlocks {
 
     public static boolean isRack(Block block) {
         return block instanceof ServerRackBlock || block instanceof BigServerRackBlock || block instanceof MainframeRackBlock;
+    }
+
+    public static boolean isPc(Block block) {
+        return block instanceof PcWallBlock;
+    }
+
+    public static boolean isActiveState(BlockState state) {
+        Block block = state.getBlock();
+        if (block instanceof ServerRackBlock) return state.get(ServerRackBlock.ACTIVE);
+        if (block instanceof BigServerRackBlock) return state.get(BigServerRackBlock.ACTIVE);
+        if (block instanceof MainframeRackBlock) return state.get(MainframeRackBlock.ACTIVE);
+        if (block instanceof PcWallBlock) return state.get(PcWallBlock.ALERT);
+        return false;
+    }
+
+    /**
+     * Toggle every rack in a cube around center.
+     * If at least one rack is inactive -> turn ALL on. Otherwise -> turn ALL off.
+     * Returns number of racks affected.
+     */
+    public static int toggleRacksInRadius(World world, BlockPos center, int radius) {
+        Set<BlockPos> lowers = new LinkedHashSet<>();
+        BlockPos min = center.add(-radius, -radius, -radius);
+        BlockPos max = center.add(radius, radius, radius);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            BlockState s = world.getBlockState(p);
+            if (!isRack(s.getBlock())) continue;
+            LowerInfo info = getLowerInfo(s, p);
+            if (info != null) lowers.add(info.lowerPos().toImmutable());
+        }
+        if (lowers.isEmpty()) return 0;
+
+        boolean anyInactive = false;
+        for (BlockPos lp : lowers) {
+            if (!isActiveState(world.getBlockState(lp))) {
+                anyInactive = true;
+                break;
+            }
+        }
+        boolean target = anyInactive; // any off -> turn everything on
+        for (BlockPos lp : lowers) {
+            boolean cur = isActiveState(world.getBlockState(lp));
+            if (cur != target) toggleAt(world, lp);
+        }
+        return lowers.size();
+    }
+
+    /**
+     * Same as toggleRacksInRadius but flips PcWallBlock ALERT state.
+     * Any PC not in alert -> ALL go alert. Otherwise ALL calm down.
+     */
+    public static int togglePcsInRadius(World world, BlockPos center, int radius) {
+        Set<BlockPos> pcs = new LinkedHashSet<>();
+        BlockPos min = center.add(-radius, -radius, -radius);
+        BlockPos max = center.add(radius, radius, radius);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            BlockState s = world.getBlockState(p);
+            if (isPc(s.getBlock())) pcs.add(p.toImmutable());
+        }
+        if (pcs.isEmpty()) return 0;
+
+        boolean anyCalm = false;
+        for (BlockPos pp : pcs) {
+            if (!world.getBlockState(pp).get(PcWallBlock.ALERT)) {
+                anyCalm = true;
+                break;
+            }
+        }
+        boolean target = anyCalm;
+        for (BlockPos pp : pcs) {
+            PcWallBlock.setAlert(world, pp, target);
+        }
+        // one sound from the middle of the action instead of a choir
+        PcWallBlock.playAlertSound(world, center, target);
+        return pcs.size();
     }
 
     public static void toggleAt(World world, BlockPos anyPos) {
