@@ -1,0 +1,221 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+new file mode 100644
+index 0000000..c1d2520
+--- /dev/null
++++ b/.github/workflows/build.yml
+@@ -0,0 +1,25 @@
++name: Build ServerRack Mod
++
++on:
++  push:
++    branches: [ "**" ]
++  pull_request:
++    branches: [ "**" ]
++  workflow_dispatch:
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-java@v4
++        with:
++          distribution: temurin
++          java-version: 21
++      - uses: gradle/actions/setup-gradle@v4
++      - run: chmod +x gradlew
++      - run: ./gradlew build --stacktrace
++      - uses: actions/upload-artifact@v4
++        with:
++          name: serverrack-jar
++          path: build/libs/*.jar
+diff --git a/build.gradle b/build.gradle
+index ab35f42..b5bbf48 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -1,5 +1,5 @@
+ plugins {
+-    id 'fabric-loom' version '1.7-SNAPSHOT'
++    id 'fabric-loom' version '1.8-SNAPSHOT'
+     id 'maven-publish'
+ }
+ 
+diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
+index ff23a68..df97d72 100644
+--- a/gradle/wrapper/gradle-wrapper.properties
++++ b/gradle/wrapper/gradle-wrapper.properties
+@@ -1,6 +1,6 @@
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.2-bin.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+ networkTimeout=10000
+ validateDistributionUrl=true
+ zipStoreBase=GRADLE_USER_HOME
+diff --git a/src/main/java/com/denchy/serverrack/block/BigServerRackBlock.java b/src/main/java/com/denchy/serverrack/block/BigServerRackBlock.java
+index 9701efa..4c75834 100644
+--- a/src/main/java/com/denchy/serverrack/block/BigServerRackBlock.java
++++ b/src/main/java/com/denchy/serverrack/block/BigServerRackBlock.java
+@@ -3,6 +3,7 @@ package com.denchy.serverrack.block;
+ import com.denchy.serverrack.blockentity.ServerRackBlockEntity;
+ import com.denchy.serverrack.registry.ModBlockEntities;
+ import net.minecraft.block.Block;
++import com.mojang.serialization.MapCodec;
+ import net.minecraft.block.BlockRenderType;
+ import net.minecraft.block.BlockState;
+ import net.minecraft.block.BlockWithEntity;
+@@ -42,6 +43,11 @@ public class BigServerRackBlock extends BlockWithEntity {
+ 
+     private static final VoxelShape SHAPE = VoxelShapes.cuboid(0.05, 0.0, 0.05, 0.95, 1.0, 0.95);
+ 
++    @Override
++    protected MapCodec<? extends BlockWithEntity> getCodec() {
++        return createCodec(BigServerRackBlock::new);
++    }
++
+     public BigServerRackBlock(Settings settings) {
+         super(settings);
+         setDefaultState(getStateManager().getDefaultState()
+@@ -86,7 +92,7 @@ public class BigServerRackBlock extends BlockWithEntity {
+     }
+ 
+     @Override
+-    protected BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
++    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+         TripleBlockPart part = state.get(PART);
+         BlockPos lower = lowerPos(state, pos);
+         // break all 3
+diff --git a/src/main/java/com/denchy/serverrack/block/MainframeRackBlock.java b/src/main/java/com/denchy/serverrack/block/MainframeRackBlock.java
+index 9101a58..f1976fb 100644
+--- a/src/main/java/com/denchy/serverrack/block/MainframeRackBlock.java
++++ b/src/main/java/com/denchy/serverrack/block/MainframeRackBlock.java
+@@ -3,6 +3,7 @@ package com.denchy.serverrack.block;
+ import com.denchy.serverrack.blockentity.ServerRackBlockEntity;
+ import com.denchy.serverrack.registry.ModBlockEntities;
+ import net.minecraft.block.Block;
++import com.mojang.serialization.MapCodec;
+ import net.minecraft.block.BlockRenderType;
+ import net.minecraft.block.BlockState;
+ import net.minecraft.block.BlockWithEntity;
+@@ -43,6 +44,11 @@ public class MainframeRackBlock extends BlockWithEntity {
+ 
+     private static final VoxelShape SHAPE = VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+ 
++    @Override
++    protected MapCodec<? extends BlockWithEntity> getCodec() {
++        return createCodec(MainframeRackBlock::new);
++    }
++
+     public MainframeRackBlock(Settings settings) {
+         super(settings);
+         setDefaultState(getStateManager().getDefaultState()
+@@ -109,7 +115,7 @@ public class MainframeRackBlock extends BlockWithEntity {
+     }
+ 
+     @Override
+-    protected BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
++    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+         BlockPos lowerLeft = lowerPos(state, pos);
+         Direction facing = state.get(FACING);
+         Direction right = getRight(facing);
+diff --git a/src/main/java/com/denchy/serverrack/block/ServerRackBlock.java b/src/main/java/com/denchy/serverrack/block/ServerRackBlock.java
+index 52a7677..df3bc18 100644
+--- a/src/main/java/com/denchy/serverrack/block/ServerRackBlock.java
++++ b/src/main/java/com/denchy/serverrack/block/ServerRackBlock.java
+@@ -3,6 +3,7 @@ package com.denchy.serverrack.block;
+ import com.denchy.serverrack.blockentity.ServerRackBlockEntity;
+ import com.denchy.serverrack.registry.ModBlockEntities;
+ import net.minecraft.block.Block;
++import com.mojang.serialization.MapCodec;
+ import net.minecraft.block.BlockEntityProvider;
+ import net.minecraft.block.BlockRenderType;
+ import net.minecraft.block.BlockState;
+@@ -44,6 +45,11 @@ public class ServerRackBlock extends BlockWithEntity {
+     private static final VoxelShape SHAPE =
+             VoxelShapes.cuboid(0.0625, 0.0, 0.0625, 0.9375, 1.0, 0.9375);
+ 
++    @Override
++    protected MapCodec<? extends BlockWithEntity> getCodec() {
++        return createCodec(ServerRackBlock::new);
++    }
++
+     public ServerRackBlock(Settings settings) {
+         super(settings);
+         setDefaultState(getStateManager().getDefaultState()
+@@ -86,7 +92,7 @@ public class ServerRackBlock extends BlockWithEntity {
+     }
+ 
+     @Override
+-    protected BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
++    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+         RackHalf half = state.get(HALF);
+         BlockPos other = half == RackHalf.LOWER ? pos.up() : pos.down();
+         BlockState otherState = world.getBlockState(other);
+diff --git a/src/main/java/com/denchy/serverrack/blockentity/ServerRackBlockEntity.java b/src/main/java/com/denchy/serverrack/blockentity/ServerRackBlockEntity.java
+index 63d4629..23888cc 100644
+--- a/src/main/java/com/denchy/serverrack/blockentity/ServerRackBlockEntity.java
++++ b/src/main/java/com/denchy/serverrack/blockentity/ServerRackBlockEntity.java
+@@ -1,6 +1,6 @@
+ package com.denchy.serverrack.blockentity;
+ 
+-import com.denchy.serverrack.particle.ModParticles;
++import com.denchy.serverrack.registry.ModParticles;
+ import com.denchy.serverrack.registry.ModBlockEntities;
+ import com.denchy.serverrack.registry.ModBlocks;
+ import com.denchy.serverrack.smoke.CeilingSmokeManager;
+diff --git a/src/main/java/com/denchy/serverrack/client/render/ServerRackBlockEntityRenderer.java b/src/main/java/com/denchy/serverrack/client/render/ServerRackBlockEntityRenderer.java
+index c3f56d1..1cc7779 100644
+--- a/src/main/java/com/denchy/serverrack/client/render/ServerRackBlockEntityRenderer.java
++++ b/src/main/java/com/denchy/serverrack/client/render/ServerRackBlockEntityRenderer.java
+@@ -138,16 +138,16 @@ public class ServerRackBlockEntityRenderer implements BlockEntityRenderer<Server
+         // Actually we need to get buffer with proper layer; for now we render with color
+ 
+         // Blade 1
+-        vc.vertex(mat, -s, -0.02f, 0).color(180, 180, 180, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, s, -0.02f, 0).color(180, 180, 180, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, s, 0.02f, 0).color(180, 180, 180, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, -s, 0.02f, 0).color(180, 180, 180, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1).next();
++        vc.vertex(mat, -s, -0.02f, 0).color(180, 180, 180, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, s, -0.02f, 0).color(180, 180, 180, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, s, 0.02f, 0).color(180, 180, 180, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, -s, 0.02f, 0).color(180, 180, 180, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1);
+ 
+         // Blade 2 vertical
+-        vc.vertex(mat, -0.02f, -s, 0).color(160, 160, 160, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, 0.02f, -s, 0).color(160, 160, 160, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, 0.02f, s, 0).color(160, 160, 160, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1).next();
+-        vc.vertex(mat, -0.02f, s, 0).color(160, 160, 160, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1).next();
++        vc.vertex(mat, -0.02f, -s, 0).color(160, 160, 160, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, 0.02f, -s, 0).color(160, 160, 160, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, 0.02f, s, 0).color(160, 160, 160, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1);
++        vc.vertex(mat, -0.02f, s, 0).color(160, 160, 160, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1);
+     }
+ 
+     private void renderLEDs(MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay, boolean blinkFast, boolean blinkSlow, boolean active, Direction facing) {
+@@ -204,10 +204,10 @@ public class ServerRackBlockEntityRenderer implements BlockEntityRenderer<Server
+             int r = col[0], g = col[1], b = col[2], a = active ? 255 : 120;
+ 
+             // Render quad
+-            vc.vertex(mat, x0, y0, z).color(r, g, b, a).texture(0,0).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
+-            vc.vertex(mat, x1, y0, z).color(r, g, b, a).texture(1,0).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
+-            vc.vertex(mat, x1, y1, z).color(r, g, b, a).texture(1,1).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
+-            vc.vertex(mat, x0, y1, z).color(r, g, b, a).texture(0,1).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
++            vc.vertex(mat, x0, y0, z).color(r, g, b, a).texture(0,0).overlay(overlay).light(0xF000F0).normal(0,0,1);
++            vc.vertex(mat, x1, y0, z).color(r, g, b, a).texture(1,0).overlay(overlay).light(0xF000F0).normal(0,0,1);
++            vc.vertex(mat, x1, y1, z).color(r, g, b, a).texture(1,1).overlay(overlay).light(0xF000F0).normal(0,0,1);
++            vc.vertex(mat, x0, y1, z).color(r, g, b, a).texture(0,1).overlay(overlay).light(0xF000F0).normal(0,0,1);
+         }
+     }
+ }
+diff --git a/src/main/java/com/denchy/serverrack/smoke/CeilingSmokeManager.java b/src/main/java/com/denchy/serverrack/smoke/CeilingSmokeManager.java
+index 8537271..a9067ad 100644
+--- a/src/main/java/com/denchy/serverrack/smoke/CeilingSmokeManager.java
++++ b/src/main/java/com/denchy/serverrack/smoke/CeilingSmokeManager.java
+@@ -1,6 +1,6 @@
+ package com.denchy.serverrack.smoke;
+ 
+-import com.denchy.serverrack.particle.ModParticles;
++import com.denchy.serverrack.registry.ModParticles;
+ import net.minecraft.client.MinecraftClient;
+ import net.minecraft.util.math.BlockPos;
+ import net.minecraft.world.World;
