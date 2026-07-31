@@ -1,6 +1,6 @@
 package com.denchy.serverrack.blockentity;
 
-import com.denchy.serverrack.particle.ModParticles;
+import com.denchy.serverrack.registry.ModParticles;
 import com.denchy.serverrack.registry.ModBlockEntities;
 import com.denchy.serverrack.registry.ModBlocks;
 import com.denchy.serverrack.smoke.CeilingSmokeManager;
