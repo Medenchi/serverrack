@@ -1,6 +1,6 @@
 package com.denchy.serverrack.smoke;
 
-import com.denchy.serverrack.particle.ModParticles;
+import com.denchy.serverrack.registry.ModParticles;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
