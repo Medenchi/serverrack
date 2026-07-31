@@ -1,0 +1,13 @@
+{
+  "block.serverrack.server_rack_basic": "Серверная стойка - Маленькая",
+  "block.serverrack.server_rack_advanced": "Серверная стойка - Большая",
+  "block.serverrack.server_rack_mainframe": "Серверная стойка - Мейнфрейм",
+  "itemGroup.serverrack.server_racks": "Серверные стойки",
+  "key.serverrack.toggle": "Вкл/Выкл стойку",
+  "key.serverrack.menu": "Меню дыма",
+  "category.serverrack": "Серверные стойки",
+  "screen.serverrack.smoke_config": "Настройки дыма",
+  "button.serverrack.save": "Сохранить",
+  "button.serverrack.cancel": "Отмена",
+  "particle.serverrack.ceiling_smoke": "Потолочный дым"
+}

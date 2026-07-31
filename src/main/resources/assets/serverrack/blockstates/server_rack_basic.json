@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,half=lower,active=false": { "model": "serverrack:block/server_rack_basic", "y": 0 },
+    "facing=east,half=lower,active=false":  { "model": "serverrack:block/server_rack_basic", "y": 90 },
+    "facing=south,half=lower,active=false": { "model": "serverrack:block/server_rack_basic", "y": 180 },
+    "facing=west,half=lower,active=false":  { "model": "serverrack:block/server_rack_basic", "y": 270 },
+    "facing=north,half=lower,active=true":  { "model": "serverrack:block/server_rack_basic_active", "y": 0 },
+    "facing=east,half=lower,active=true":   { "model": "serverrack:block/server_rack_basic_active", "y": 90 },
+    "facing=south,half=lower,active=true":  { "model": "serverrack:block/server_rack_basic_active", "y": 180 },
+    "facing=west,half=lower,active=true":   { "model": "serverrack:block/server_rack_basic_active", "y": 270 },
+    "facing=north,half=upper,active=false": { "model": "serverrack:block/server_rack_basic", "y": 0 },
+    "facing=east,half=upper,active=false":  { "model": "serverrack:block/server_rack_basic", "y": 90 },
+    "facing=south,half=upper,active=false": { "model": "serverrack:block/server_rack_basic", "y": 180 },
+    "facing=west,half=upper,active=false":  { "model": "serverrack:block/server_rack_basic", "y": 270 },
+    "facing=north,half=upper,active=true":  { "model": "serverrack:block/server_rack_basic_active", "y": 0 },
+    "facing=east,half=upper,active=true":   { "model": "serverrack:block/server_rack_basic_active", "y": 90 },
+    "facing=south,half=upper,active=true":  { "model": "serverrack:block/server_rack_basic_active", "y": 180 },
+    "facing=west,half=upper,active=true":   { "model": "serverrack:block/server_rack_basic_active", "y": 270 }
+  }
+}
