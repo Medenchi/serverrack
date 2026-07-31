@@ -1,3 +1,1 @@
-{
-  "parent": "serverrack:block/server_rack_mainframe"
-}
+{"parent": "serverrack:block/server_rack_mainframe_lower_left"}
