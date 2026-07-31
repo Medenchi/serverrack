@@ -1,12 +1,9 @@
 name: Build ServerRack Mod
-
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
   pull_request:
-    branches: [ "**" ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,8 +14,9 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
-      - run: ./gradlew build --stacktrace
+        with:
+          gradle-version: 8.10.2
+      - run: gradle build --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: serverrack-jar
