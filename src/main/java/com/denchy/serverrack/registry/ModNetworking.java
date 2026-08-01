@@ -19,6 +19,7 @@ public final class ModNetworking {
         PayloadTypeRegistry.playC2S().register(ClearSmokePayload.ID, ClearSmokePayload.CODEC);
         PayloadTypeRegistry.playC2S().register(BoomActionPayload.ID, BoomActionPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(NukeConfigPayload.ID, NukeConfigPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(AkErrorPayload.ID, AkErrorPayload.CODEC);
 
         // Register S2C
         PayloadTypeRegistry.playS2C().register(SmokeConfigSyncPayload.ID, SmokeConfigSyncPayload.CODEC);
@@ -48,6 +49,13 @@ public final class ModNetworking {
             context.server().execute(() -> {
                 var world = context.player().getWorld();
                 ModBlocks.togglePcsInRadius(world, payload.pos(), payload.radius());
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(AkErrorPayload.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                var world = context.player().getWorld();
+                ModBlocks.toggleAksInRadius(world, payload.pos(), payload.radius());
             });
         });
 

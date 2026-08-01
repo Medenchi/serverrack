@@ -1,0 +1,76 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "d": "serverrack:block/decor_router",
+    "particle": "serverrack:block/decor_router",
+    "led": "serverrack:block/led_router"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        2,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        3,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      }
+    },
+    {
+      "name": "antenna",
+      "from": [
+        11,
+        3,
+        7
+      ],
+      "to": [
+        12,
+        10,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      }
+    }
+  ]
+}

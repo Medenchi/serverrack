@@ -5,6 +5,7 @@ import com.denchy.serverrack.client.screen.BoomMenuScreen;
 import com.denchy.serverrack.client.screen.NukeConfigScreen;
 import com.denchy.serverrack.client.screen.SmokeConfigScreen;
 import com.denchy.serverrack.det.NukeConfig;
+import com.denchy.serverrack.network.payload.AkErrorPayload;
 import com.denchy.serverrack.network.payload.BoomActionPayload;
 import com.denchy.serverrack.network.payload.ClearSmokeSyncPayload;
 import com.denchy.serverrack.network.payload.NukeConfigSyncPayload;
@@ -40,6 +41,7 @@ public class ServerRackClient implements ClientModInitializer {
     public static KeyBinding TOGGLE_KEY;
     public static KeyBinding MENU_KEY;
     public static KeyBinding PC_ALERT_KEY;
+    public static KeyBinding AK_ERROR_KEY;
     public static KeyBinding BOOM_KEY;
 
     /** Radius in blocks for J (racks) and Z (PC walls) toggles. */
@@ -123,6 +125,12 @@ public class ServerRackClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_Z,
                 "category.serverrack"
         ));
+        AK_ERROR_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.serverrack.ak_error",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X,
+                "category.serverrack"
+        ));
         BOOM_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.serverrack.boom",
                 InputUtil.Type.KEYSYM,
@@ -165,6 +173,10 @@ public class ServerRackClient implements ClientModInitializer {
             while (PC_ALERT_KEY.wasPressed()) {
                 handlePcAlert(client);
             }
+            // X = ALL AK monitors in TOGGLE_RADIUS -> ОШИБКА ЗАГРУЗКИ! (and back)
+            while (AK_ERROR_KEY.wasPressed()) {
+                handleAkError(client);
+            }
             // P = БАБАХ (director module, works wherever the detonator selection is)
             while (BOOM_KEY.wasPressed()) {
                 ClientPlayNetworking.send(new BoomActionPayload("boom"));
@@ -200,6 +212,42 @@ public class ServerRackClient implements ClientModInitializer {
             client.player.sendMessage(Text.literal("§c[ServerRack] ПК-стены не найдены в радиусе " + TOGGLE_RADIUS + " блоков"), true);
         } else {
             client.player.sendMessage(Text.literal("§4[ServerRack] СЕРВЕРАМ ПИЗДА §c(пк-стен в радиусе " + TOGGLE_RADIUS + ": " + found + ")"), true);
+        }
+    }
+
+    private void handleAkError(MinecraftClient client) {
+        if (client.player == null || client.world == null) return;
+        BlockPos playerPos = client.player.getBlockPos();
+        // Client-side pre-scan so the message is honest; the server repeats the pass authoritatively.
+        java.util.Set<BlockPos> origins = new java.util.HashSet<>();
+        BlockPos min = playerPos.add(-TOGGLE_RADIUS, -TOGGLE_RADIUS, -TOGGLE_RADIUS);
+        BlockPos max = playerPos.add(TOGGLE_RADIUS, TOGGLE_RADIUS, TOGGLE_RADIUS);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            var s = client.world.getBlockState(p);
+            if (!(s.getBlock() instanceof com.denchy.serverrack.block.AkMonitorBlock)) continue;
+            origins.add(com.denchy.serverrack.block.AkMonitorBlock.getOrigin(s, p)); // 4 blocks -> 1 setup
+        }
+
+        ClientPlayNetworking.send(new AkErrorPayload(playerPos, TOGGLE_RADIUS));
+
+        if (origins.isEmpty()) {
+            client.player.sendMessage(Text.literal("§c[АК] АК-сетапов в радиусе " + TOGGLE_RADIUS + " блоков нет"), true);
+            return;
+        }
+        // predict the server's target: any calm setup -> everything flashes the error
+        boolean anyNormal = false;
+        for (BlockPos o : origins) {
+            var s = client.world.getBlockState(o);
+            if (s.getBlock() instanceof com.denchy.serverrack.block.AkMonitorBlock
+                    && !s.get(com.denchy.serverrack.block.AkMonitorBlock.ERROR)) {
+                anyNormal = true;
+                break;
+            }
+        }
+        if (anyNormal) {
+            client.player.sendMessage(Text.literal("§c§l[АК] ОШИБКА ЗАГРУЗКИ! §7(сетапов: §f" + origins.size() + "§7)"), true);
+        } else {
+            client.player.sendMessage(Text.literal("§a[АК] Загрузка пошла заново §7(сетапов: §f" + origins.size() + "§7)"), true);
         }
     }
 

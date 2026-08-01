@@ -32,6 +32,12 @@ public final class ModItems {
         return item;
     }
 
+    private static void addBlockItem(String name, Block block) {
+        BlockItem item = new BlockItem(block, new Item.Settings());
+        Registry.register(Registries.ITEM, ModId.of(name), item);
+        RACK_ITEMS.add(item);
+    }
+
     public static void register() {
         for (Block block : ModBlocks.RACKS) {
             var id = Registries.BLOCK.getId(block);
@@ -40,8 +46,16 @@ public final class ModItems {
             RACK_ITEMS.add(item);
         }
         // PC video wall
-        BlockItem pcItem = new BlockItem(ModBlocks.PC_WALL, new Item.Settings());
-        Registry.register(Registries.ITEM, ModId.of("pc_wall"), pcItem);
-        RACK_ITEMS.add(pcItem);
+        addBlockItem("pc_wall", ModBlocks.PC_WALL);
+        // AK module: monitor + gaming chair
+        addBlockItem("ak_monitor", ModBlocks.AK_MONITOR);
+        addBlockItem("ak_chair", ModBlocks.AK_CHAIR);
+        // Room decor
+        addBlockItem("decor_mug", ModBlocks.DECOR_MUG);
+        addBlockItem("decor_bin", ModBlocks.DECOR_BIN);
+        addBlockItem("decor_board", ModBlocks.DECOR_BOARD);
+        addBlockItem("decor_plant", ModBlocks.DECOR_PLANT);
+        addBlockItem("decor_papers", ModBlocks.DECOR_PAPERS);
+        addBlockItem("decor_router", ModBlocks.DECOR_ROUTER);
     }
 }

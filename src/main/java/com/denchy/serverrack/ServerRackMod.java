@@ -1,5 +1,6 @@
 package com.denchy.serverrack;
 
+import com.denchy.serverrack.block.AkChairBlock;
 import com.denchy.serverrack.det.BoomManager;
 import com.denchy.serverrack.registry.ModBlockEntities;
 import com.denchy.serverrack.registry.ModBlocks;
@@ -30,6 +31,7 @@ public class ServerRackMod implements ModInitializer {
         ModItemGroups.register();
         ModNetworking.registerServer();
         BoomManager.register();
+        AkChairBlock.registerEvents();
         LOGGER.info("[Server Rack] Ready.");
     }
 }

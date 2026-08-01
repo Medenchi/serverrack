@@ -1,0 +1,132 @@
+{
+  "variants": {
+    "error=false,facing=north,part=l0": {
+      "model": "serverrack:block/ak_l0",
+      "y": 0
+    },
+    "error=false,facing=east,part=l0": {
+      "model": "serverrack:block/ak_l0",
+      "y": 90
+    },
+    "error=false,facing=south,part=l0": {
+      "model": "serverrack:block/ak_l0",
+      "y": 180
+    },
+    "error=false,facing=west,part=l0": {
+      "model": "serverrack:block/ak_l0",
+      "y": 270
+    },
+    "error=false,facing=north,part=r0": {
+      "model": "serverrack:block/ak_r0",
+      "y": 0
+    },
+    "error=false,facing=east,part=r0": {
+      "model": "serverrack:block/ak_r0",
+      "y": 90
+    },
+    "error=false,facing=south,part=r0": {
+      "model": "serverrack:block/ak_r0",
+      "y": 180
+    },
+    "error=false,facing=west,part=r0": {
+      "model": "serverrack:block/ak_r0",
+      "y": 270
+    },
+    "error=false,facing=north,part=l1": {
+      "model": "serverrack:block/ak_l1",
+      "y": 0
+    },
+    "error=false,facing=east,part=l1": {
+      "model": "serverrack:block/ak_l1",
+      "y": 90
+    },
+    "error=false,facing=south,part=l1": {
+      "model": "serverrack:block/ak_l1",
+      "y": 180
+    },
+    "error=false,facing=west,part=l1": {
+      "model": "serverrack:block/ak_l1",
+      "y": 270
+    },
+    "error=false,facing=north,part=r1": {
+      "model": "serverrack:block/ak_r1",
+      "y": 0
+    },
+    "error=false,facing=east,part=r1": {
+      "model": "serverrack:block/ak_r1",
+      "y": 90
+    },
+    "error=false,facing=south,part=r1": {
+      "model": "serverrack:block/ak_r1",
+      "y": 180
+    },
+    "error=false,facing=west,part=r1": {
+      "model": "serverrack:block/ak_r1",
+      "y": 270
+    },
+    "error=true,facing=north,part=l0": {
+      "model": "serverrack:block/ak_l0_error",
+      "y": 0
+    },
+    "error=true,facing=east,part=l0": {
+      "model": "serverrack:block/ak_l0_error",
+      "y": 90
+    },
+    "error=true,facing=south,part=l0": {
+      "model": "serverrack:block/ak_l0_error",
+      "y": 180
+    },
+    "error=true,facing=west,part=l0": {
+      "model": "serverrack:block/ak_l0_error",
+      "y": 270
+    },
+    "error=true,facing=north,part=r0": {
+      "model": "serverrack:block/ak_r0_error",
+      "y": 0
+    },
+    "error=true,facing=east,part=r0": {
+      "model": "serverrack:block/ak_r0_error",
+      "y": 90
+    },
+    "error=true,facing=south,part=r0": {
+      "model": "serverrack:block/ak_r0_error",
+      "y": 180
+    },
+    "error=true,facing=west,part=r0": {
+      "model": "serverrack:block/ak_r0_error",
+      "y": 270
+    },
+    "error=true,facing=north,part=l1": {
+      "model": "serverrack:block/ak_l1_error",
+      "y": 0
+    },
+    "error=true,facing=east,part=l1": {
+      "model": "serverrack:block/ak_l1_error",
+      "y": 90
+    },
+    "error=true,facing=south,part=l1": {
+      "model": "serverrack:block/ak_l1_error",
+      "y": 180
+    },
+    "error=true,facing=west,part=l1": {
+      "model": "serverrack:block/ak_l1_error",
+      "y": 270
+    },
+    "error=true,facing=north,part=r1": {
+      "model": "serverrack:block/ak_r1_error",
+      "y": 0
+    },
+    "error=true,facing=east,part=r1": {
+      "model": "serverrack:block/ak_r1_error",
+      "y": 90
+    },
+    "error=true,facing=south,part=r1": {
+      "model": "serverrack:block/ak_r1_error",
+      "y": 180
+    },
+    "error=true,facing=west,part=r1": {
+      "model": "serverrack:block/ak_r1_error",
+      "y": 270
+    }
+  }
+}
