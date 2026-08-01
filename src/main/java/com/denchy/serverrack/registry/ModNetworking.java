@@ -16,6 +16,7 @@ public final class ModNetworking {
         PayloadTypeRegistry.playC2S().register(ToggleRackPayload.ID, ToggleRackPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(TogglePcPayload.ID, TogglePcPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ClearSmokePayload.ID, ClearSmokePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(BoomActionPayload.ID, BoomActionPayload.CODEC);
 
         // Register S2C
         PayloadTypeRegistry.playS2C().register(SmokeConfigSyncPayload.ID, SmokeConfigSyncPayload.CODEC);

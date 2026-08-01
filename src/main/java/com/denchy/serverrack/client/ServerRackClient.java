@@ -2,6 +2,7 @@ package com.denchy.serverrack.client;
 
 import com.denchy.serverrack.client.render.ServerRackBlockEntityRenderer;
 import com.denchy.serverrack.client.screen.SmokeConfigScreen;
+import com.denchy.serverrack.network.payload.BoomActionPayload;
 import com.denchy.serverrack.network.payload.ClearSmokeSyncPayload;
 import com.denchy.serverrack.network.payload.SmokeConfigSyncPayload;
 import com.denchy.serverrack.network.payload.TogglePcPayload;
@@ -32,6 +33,7 @@ public class ServerRackClient implements ClientModInitializer {
     public static KeyBinding TOGGLE_KEY;
     public static KeyBinding MENU_KEY;
     public static KeyBinding PC_ALERT_KEY;
+    public static KeyBinding BOOM_KEY;
 
     /** Radius in blocks for J (racks) and Z (PC walls) toggles. */
     public static final int TOGGLE_RADIUS = 32;
@@ -80,6 +82,12 @@ public class ServerRackClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_Z,
                 "category.serverrack"
         ));
+        BOOM_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.serverrack.boom",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_P,
+                "category.serverrack"
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.world == null || client.player == null) return;
@@ -94,6 +102,10 @@ public class ServerRackClient implements ClientModInitializer {
             // Z = ALL pc walls in TOGGLE_RADIUS -> СЕРВЕРАМ ПИЗДА mode
             while (PC_ALERT_KEY.wasPressed()) {
                 handlePcAlert(client);
+            }
+            // P = БАБАХ (director module, works wherever the detonator selection is)
+            while (BOOM_KEY.wasPressed()) {
+                ClientPlayNetworking.send(new BoomActionPayload("boom"));
             }
             while (MENU_KEY.wasPressed()) {
                 client.setScreen(new SmokeConfigScreen());
