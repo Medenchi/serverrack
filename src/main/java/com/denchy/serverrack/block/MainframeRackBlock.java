@@ -3,6 +3,7 @@ package com.denchy.serverrack.block;
 import com.denchy.serverrack.blockentity.ServerRackBlockEntity;
 import com.denchy.serverrack.registry.ModBlockEntities;
 import net.minecraft.block.Block;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
@@ -42,6 +43,11 @@ public class MainframeRackBlock extends BlockWithEntity {
     public static final BooleanProperty ACTIVE = BooleanProperty.of("active");
 
     private static final VoxelShape SHAPE = VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return createCodec(MainframeRackBlock::new);
+    }
 
     public MainframeRackBlock(Settings settings) {
         super(settings);
@@ -109,7 +115,7 @@ public class MainframeRackBlock extends BlockWithEntity {
     }
 
     @Override
-    protected BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         BlockPos lowerLeft = lowerPos(state, pos);
         Direction facing = state.get(FACING);
         Direction right = getRight(facing);
