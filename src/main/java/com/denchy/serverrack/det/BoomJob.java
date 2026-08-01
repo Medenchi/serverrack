@@ -65,7 +65,7 @@ public class BoomJob {
         switch (type) {
             case SHRAPNEL -> {
                 order = new ArrayList<>(blocks);
-                Collections.shuffle(order, world.random);
+                Collections.shuffle(order);
             }
             case PANCAKE -> {
                 order = new ArrayList<>(blocks);
@@ -302,7 +302,7 @@ public class BoomJob {
             for (int iy = 0; iy < gy; iy++)
                 for (int iz = 0; iz < gz; iz++)
                     secs.add(new BlockPos(ix, iy, iz));
-        Collections.shuffle(secs, world.random);
+        Collections.shuffle(secs);
         int idx = (tick - phase1End) / Math.max(1, (int) (4 / Math.max(0.25f, speed)));
         if (idx >= secs.size()) { done = true; return; }
         BlockPos s = secs.get(idx);

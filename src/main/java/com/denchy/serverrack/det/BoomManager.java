@@ -138,7 +138,7 @@ public final class BoomManager {
             err(player, "Нет выделения! ЛКМ - точка 1, ПКМ - точка 2");
             return;
         }
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = (ServerWorld) player.getWorld();
         BlockPos min = minOf(s.p1, s.p2);
         BlockPos max = maxOf(s.p1, s.p2);
 
@@ -159,7 +159,7 @@ public final class BoomManager {
     }
 
     private static void restore(ServerPlayerEntity player, Sel s) {
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = (ServerWorld) player.getWorld();
         Path file = Backup.fileFor(world, player.getUuid());
         if (!Files.exists(file)) {
             err(player, "Бэкапа нет в этом измерении - сначала выдели и бахни");
@@ -177,7 +177,7 @@ public final class BoomManager {
     private static void backupAsync(ServerPlayerEntity player) {
         Sel s = sel(player.getUuid());
         if (s.p1 == null || s.p2 == null) return;
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = (ServerWorld) player.getWorld();
         Backup b = Backup.capture(world, minOf(s.p1, s.p2), maxOf(s.p1, s.p2));
         b.saveAsync(world, player.getUuid());
         s.hasBackup = true;
@@ -205,14 +205,14 @@ public final class BoomManager {
     }
 
     private static void outlinePoint(ServerPlayerEntity p, BlockPos pos) {
-        ServerWorld w = p.getServerWorld();
+        ServerWorld w = (ServerWorld) p.getWorld();
         w.spawnParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                 8, 0.3, 0.3, 0.3, 0.02);
     }
 
     private static void outlineBox(ServerPlayerEntity p) {
         Sel s = sel(p.getUuid());
-        ServerWorld w = p.getServerWorld();
+        ServerWorld w = (ServerWorld) p.getWorld();
         Vec3d a = Vec3d.of(minOf(s.p1, s.p2));
         Vec3d b = Vec3d.of(maxOf(s.p1, s.p2)).add(1, 1, 1);
         // 12 edges
