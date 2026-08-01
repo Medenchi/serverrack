@@ -14,7 +14,9 @@ public final class ModNetworking {
         // Register C2S
         PayloadTypeRegistry.playC2S().register(SmokeConfigPayload.ID, SmokeConfigPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ToggleRackPayload.ID, ToggleRackPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(TogglePcPayload.ID, TogglePcPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ClearSmokePayload.ID, ClearSmokePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(BoomActionPayload.ID, BoomActionPayload.CODEC);
 
         // Register S2C
         PayloadTypeRegistry.playS2C().register(SmokeConfigSyncPayload.ID, SmokeConfigSyncPayload.CODEC);
@@ -35,7 +37,14 @@ public final class ModNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ToggleRackPayload.ID, (payload, context) -> {
             context.server().execute(() -> {
                 var world = context.player().getWorld();
-                ModBlocks.toggleAt(world, payload.pos());
+                ModBlocks.toggleRacksInRadius(world, payload.pos(), payload.radius());
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(TogglePcPayload.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                var world = context.player().getWorld();
+                ModBlocks.togglePcsInRadius(world, payload.pos(), payload.radius());
             });
         });
 
