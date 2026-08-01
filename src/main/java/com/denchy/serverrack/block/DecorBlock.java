@@ -30,7 +30,10 @@ public class DecorBlock extends Block {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        if (hasFacing) builder.add(FACING);
+        // Block builds its StateManager from its constructor, before this class's
+        // fields are assigned. Therefore hasFacing is still false here. Keep the
+        // property on every decor state; only directional decor uses it on placement.
+        builder.add(FACING);
     }
 
     @Override
