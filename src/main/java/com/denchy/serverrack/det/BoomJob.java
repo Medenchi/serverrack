@@ -160,12 +160,14 @@ public class BoomJob {
     }
 
     private void sound(Vec3d c, float vol, float pitch) {
-        world.playSound(null, BlockPos.ofFloored(c), SoundEvents.ENTITY_GENERIC_EXPLODE,
+        // NOTE: ENTITY_GENERIC_EXPLODE is RegistryEntry<SoundEvent> - the only
+        // playSound overloads that accept a RegistryEntry are the double-coord ones.
+        world.playSound(null, c.x, c.y, c.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
                 SoundCategory.BLOCKS, vol, pitch);
     }
 
     private void fireSound(Vec3d c, float vol, float pitch) {
-        world.playSound(null, BlockPos.ofFloored(c), SoundEvents.BLOCK_FIRE_AMBIENT,
+        world.playSound(null, c.x, c.y, c.z, SoundEvents.BLOCK_FIRE_AMBIENT,
                 SoundCategory.BLOCKS, vol, pitch);
     }
 
@@ -470,8 +472,11 @@ public class BoomJob {
                     BoomType.PANCAKE, speed); // dummy type; step() overridden
             this.backup = backup;
             this.palette = new ArrayList<>(backup.palette.size());
+            // toBlockState wants RegistryEntryLookup<Block>, not DynamicRegistryManager
+            var blockLookup = world.getRegistryManager().createRegistryLookup()
+                    .getOrThrow(net.minecraft.registry.RegistryKeys.BLOCK);
             for (NbtCompound c : backup.palette) {
-                this.palette.add(NbtHelper.toBlockState(world.getRegistryManager(), c));
+                this.palette.add(NbtHelper.toBlockState(blockLookup, c));
             }
             this.blocks.clear();
         }
