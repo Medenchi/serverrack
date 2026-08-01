@@ -4,9 +4,11 @@ import com.denchy.serverrack.registry.ModItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -18,6 +20,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -178,6 +182,11 @@ public class BoomJob {
         sound(c, 4.0f, 0.6f + world.random.nextFloat() * 0.5f);
     }
 
+    /**
+     * Office paperwork: instead of spinning item dice on the floor, documents
+     * land in INVISIBLE item frames = papers lying flat on the ruins,
+     * movie-set style (and they never despawn mid-take).
+     */
     protected void spawnPaper(BlockPos p) {
         // ordinary office sheets are common, the "exotic" scraps are rare
         Item[] scraps = {
@@ -189,12 +198,27 @@ public class BoomJob {
                 ModItems.PAPER_SCRAP_F
         };
         Item pick = scraps[world.random.nextInt(scraps.length)];
-        ItemEntity it = new ItemEntity(world, p.getX() + 0.5, p.getY() + 0.8, p.getZ() + 0.5,
-                new ItemStack(pick));
-        it.setVelocity((world.random.nextDouble() - 0.5) * 0.35,
-                0.25 + world.random.nextDouble() * 0.4,
-                (world.random.nextDouble() - 0.5) * 0.35);
-        world.spawnEntity(it);
+        // find solid floor under the blast, up to 8 blocks down
+        BlockPos floor = null;
+        for (int dy = 0; dy <= 8; dy++) {
+            BlockPos c = p.down(dy);
+            BlockPos above = c.up();
+            if (!world.getBlockState(c).isAir()
+                    && world.getBlockState(c).isSolidBlock(world, c)
+                    && world.getBlockState(above).isAir()) {
+                floor = above;
+                break;
+            }
+        }
+        if (floor == null) return; // no decent ground, waste of a prop
+        if (!world.getEntitiesByClass(ItemFrameEntity.class, Box.enclosing(floor, floor), f -> true).isEmpty()) {
+            return; // one document per spot
+        }
+        ItemFrameEntity frame = new ItemFrameEntity(world, floor, Direction.UP);
+        frame.setHeldItemStack(new ItemStack(pick));
+        frame.setInvisible(true);          // the "transparent frame" itself
+        frame.setRotation(world.random.nextInt(8));
+        world.spawnEntity(frame);
     }
 
     // ================================================================== the ten
@@ -486,7 +510,29 @@ public class BoomJob {
             for (NbtCompound c : backup.palette) {
                 this.palette.add(NbtHelper.toBlockState(blockLookup, c));
             }
-            this.blocks.clear();
+            cleanupAftermath();
+        }
+
+        /**
+         * The UNPAID INTERN of this mod. Before rebuilding the set, sweep up
+         * everything the detonation scattered: flying blocks, loose items and
+         * paper frames (region + 3-block margin), plus leftover fires inside it.
+         */
+        private void cleanupAftermath() {
+            BlockPos lo = backup.origin.add(-3, -3, -3);
+            BlockPos hi = backup.origin.add(backup.sx + 2, backup.sy + 2, backup.sz + 2);
+            Box area = Box.enclosing(lo, hi);
+            for (Entity e : world.getEntitiesByClass(Entity.class, area,
+                    en -> en instanceof FallingBlockEntity || en instanceof ItemEntity)) {
+                e.discard();
+            }
+            BlockPos topRight = backup.origin.add(backup.sx - 1, backup.sy - 1, backup.sz - 1);
+            for (BlockPos p : BlockPos.iterate(backup.origin, topRight)) {
+                BlockState s = world.getBlockState(p);
+                if (s.isOf(Blocks.FIRE) || s.isOf(Blocks.SOUL_FIRE)) {
+                    world.setBlockState(p, Blocks.AIR.getDefaultState(), 3);
+                }
+            }
         }
 
         @Override
