@@ -4,9 +4,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
@@ -55,6 +60,29 @@ public class AkChairBlock extends Block {
         return getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
     }
 
+    /**
+     * Build the invisible saddle with Marker:1b straight off NBT —
+     * ArmorStandEntity.setMarker() is private since 1.20.5, and the marker
+     * flag is what gives the stand a zero-size hitbox so the rider sits
+     * exactly at the saddle point instead of balancing on its helmet.
+     */
+    private static ArmorStandEntity createSaddle(World world, BlockPos pos) {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putString("id", "minecraft:armor_stand");
+        nbt.putBoolean("Marker", true);
+        nbt.putBoolean("Invisible", true);
+        nbt.putBoolean("NoGravity", true);
+        nbt.putBoolean("Silent", true);
+        nbt.putBoolean("Invulnerable", true);
+        NbtList posTag = new NbtList();
+        posTag.add(NbtDouble.of(pos.getX() + 0.5));
+        posTag.add(NbtDouble.of(pos.getY() + 0.33));
+        posTag.add(NbtDouble.of(pos.getZ() + 0.5));
+        nbt.put("Pos", posTag);
+        Entity spawned = EntityType.getEntityFromNbt(nbt, world).orElse(null);
+        return spawned instanceof ArmorStandEntity stand ? stand : null;
+    }
+
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos,
                                  PlayerEntity player, BlockHitResult hit) {
@@ -70,11 +98,10 @@ public class AkChairBlock extends Block {
                 SEATS.remove(pos);
                 seat.discard();
             }
-            ArmorStandEntity saddle = new ArmorStandEntity(world,
-                    pos.getX() + 0.5, pos.getY() + 0.26, pos.getZ() + 0.5);
-            saddle.setInvisible(true);
-            saddle.setMarker(true);
-            saddle.setNoGravity(true);
+            ArmorStandEntity saddle = createSaddle(world, pos);
+            if (saddle == null) {
+                return ActionResult.SUCCESS;
+            }
             world.spawnEntity(saddle);
             player.startRiding(saddle, true);
             SEATS.put(pos.toImmutable(), saddle);
