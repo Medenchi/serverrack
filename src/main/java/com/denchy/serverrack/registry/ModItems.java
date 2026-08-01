@@ -22,5 +22,9 @@ public final class ModItems {
             Registry.register(Registries.ITEM, id, item);
             RACK_ITEMS.add(item);
         }
+        // PC video wall
+        BlockItem pcItem = new BlockItem(ModBlocks.PC_WALL, new Item.Settings());
+        Registry.register(Registries.ITEM, ModId.of("pc_wall"), pcItem);
+        RACK_ITEMS.add(pcItem);
     }
 }

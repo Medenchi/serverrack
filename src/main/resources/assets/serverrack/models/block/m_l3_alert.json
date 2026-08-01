@@ -1,0 +1,251 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "case": "serverrack:block/pc_case",
+    "bezel": "serverrack:block/pc_bezel",
+    "ledb": "serverrack:block/led_blue",
+    "leda": "serverrack:block/led_amber",
+    "ledr": "serverrack:block/led_red",
+    "particle": "serverrack:block/pc_case",
+    "screen": "serverrack:block/pc_screen_alert"
+  },
+  "elements": [
+    {
+      "name": "chassis",
+      "from": [
+        0,
+        0,
+        8.1
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#case"
+        },
+        "east": {
+          "texture": "#case"
+        },
+        "south": {
+          "texture": "#case"
+        },
+        "west": {
+          "texture": "#case"
+        },
+        "up": {
+          "texture": "#case"
+        },
+        "down": {
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "bezel_l",
+      "from": [
+        0,
+        0,
+        7.9
+      ],
+      "to": [
+        1,
+        16,
+        8.12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_r",
+      "from": [
+        15,
+        0,
+        7.9
+      ],
+      "to": [
+        16,
+        16,
+        8.12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_t",
+      "from": [
+        1,
+        15,
+        7.9
+      ],
+      "to": [
+        15,
+        16,
+        8.12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_b",
+      "from": [
+        1,
+        0,
+        7.9
+      ],
+      "to": [
+        15,
+        1,
+        8.12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "screen",
+      "from": [
+        1,
+        1,
+        7.86
+      ],
+      "to": [
+        15,
+        15,
+        7.92
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.167,
+            0.167,
+            5.167,
+            5.167
+          ],
+          "texture": "#screen"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "rail",
+      "from": [
+        7.5,
+        0,
+        15.9
+      ],
+      "to": [
+        8.5,
+        16,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#case"
+        },
+        "east": {
+          "texture": "#case"
+        },
+        "south": {
+          "texture": "#case"
+        },
+        "west": {
+          "texture": "#case"
+        },
+        "up": {
+          "texture": "#case"
+        },
+        "down": {
+          "texture": "#case"
+        }
+      }
+    }
+  ]
+}
