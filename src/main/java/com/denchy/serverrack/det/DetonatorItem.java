@@ -1,7 +1,6 @@
 package com.denchy.serverrack.det;
 
-import com.denchy.serverrack.client.screen.BoomMenuScreen;
-import net.minecraft.client.MinecraftClient;
+import com.denchy.serverrack.client.ServerRackClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -15,7 +14,8 @@ import net.minecraft.world.World;
 /**
  * Director's detonator.
  * LMB = corner 1 (via AttackBlockCallback), RMB on block = corner 2,
- * RMB in air = boom menu, sneak+RMB in air = clear selection.
+ * RMB tap in air = boom menu, RMB HOLD in air = nuke settings,
+ * sneak+RMB in air = clear selection.
  */
 public class DetonatorItem extends Item {
 
@@ -40,7 +40,8 @@ public class DetonatorItem extends Item {
             return TypedActionResult.success(user.getStackInHand(hand));
         }
         if (world.isClient) {
-            MinecraftClient.getInstance().setScreen(new BoomMenuScreen());
+            // gesture resolution (tap vs hold) runs in the client tick loop
+            ServerRackClient.beginDetonatorHold();
         }
         return TypedActionResult.success(user.getStackInHand(hand));
     }

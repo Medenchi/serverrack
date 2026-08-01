@@ -1,6 +1,7 @@
 package com.denchy.serverrack.det;
 
 import com.denchy.serverrack.registry.ModItems;
+import com.denchy.serverrack.registry.ModParticles;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -97,6 +98,7 @@ public class BoomJob {
                 case IMPLODE -> stepImplode();
                 case SWEEP -> stepSweep();
                 case RAIN -> stepRain();
+                case NUKE -> stepNuke();
             }
         } catch (Exception e) {
             done = true; // never let a job wedge the ticker
@@ -467,6 +469,108 @@ public class BoomJob {
         }
         if (tick % 3 == 0) {
             sound(new Vec3d(px + 0.5, center.y, center.z), 1.5f, 1.8f);
+        }
+    }
+
+    // ================================================================== nuke
+    /**
+     * Yellow mushroom, assembled from the 7 custom bricks in textures/particle:
+     * flash -> shockwave carve -> ground dust ring -> stem column -> cap bloom.
+     * Everything visual scales with NukeConfig; destruction behaves like the
+     * other scripts (no drops, soft overspill beyond the edge).
+     */
+    private void stepNuke() {
+        float speedf = Math.max(0.25f, speed);
+        double dens = Math.max(0.25, com.denchy.serverrack.det.NukeConfig.density / 40.0);
+        int stemH = com.denchy.serverrack.det.NukeConfig.stemHeight;
+        double capR = com.denchy.serverrack.det.NukeConfig.capRadius;
+        double ringR = com.denchy.serverrack.det.NukeConfig.ringRadius;
+        double maxDist = center.distanceTo(new Vec3d(min.getX(), min.getY(), min.getZ())) + 4;
+
+        if (tick == 1) {
+            // THE flash
+            world.spawnParticles(ParticleTypes.FLASH, center.x, center.y, center.z, 1, 0, 0, 0, 0);
+            sound(center, 6.0f, 0.35f);
+        }
+
+        // 1) shockwave carve: the set actually dies
+        double r = tick * 2.2 * speedf;
+        if (r <= maxDist) {
+            for (BlockPos p : blocks) {
+                double d = Math.sqrt(p.getSquaredDistance(center));
+                if (d >= r - 2.2 && d <= r) {
+                    Vec3d imp = new Vec3d(p.getX() + 0.5 - center.x, 0.7,
+                            p.getZ() + 0.5 - center.z).normalize().multiply(0.45);
+                    destroyWithOverspill(p, 0.26f, imp);
+                }
+            }
+            if (tick % 2 == 0) {
+                world.spawnParticles(ModParticles.NUKE_FIRE, center.x, center.y + 1.0, center.z,
+                        (int) (3 * dens), 0.7, 0.6, 0.7, 0.02);
+            }
+        }
+
+        // 2) ground dust ring sweeping out
+        double ringNow = Math.min(ringR, tick * 0.8 * speedf);
+        if (ringNow < ringR - 0.001) {
+            int ringN = (int) (8 * dens);
+            for (int i = 0; i < ringN; i++) {
+                double a = world.random.nextDouble() * Math.PI * 2;
+                world.spawnParticles(ModParticles.NUKE_RING,
+                        center.x + Math.cos(a) * ringNow, min.getY() + 1.05,
+                        center.z + Math.sin(a) * ringNow, 1, 0.05, 0.015, 0.05, 0.0);
+            }
+        }
+
+        // 3) stem column: 0 -> stemH over stemRiseEnd ticks
+        double stemRiseEnd = Math.max(1.0, stemH / (0.6 * speedf));
+        double stemNow = Math.min(stemH, tick * 0.6 * speedf);
+        int stemN = Math.max(1, (int) Math.round(3 * dens));
+        if (tick <= stemRiseEnd + 10) {
+            for (double y = 0; y <= stemNow; y += 2.0) {
+                world.spawnParticles(ModParticles.NUKE_STEM,
+                        center.x, center.y + 1.0 + y, center.z,
+                        stemN, 0.35, 0.25, 0.35, 0.008);
+            }
+            if (stemNow < stemH) {
+                world.spawnParticles(ModParticles.NUKE_FIRE,
+                        center.x, center.y + 2.0 + stemNow, center.z,
+                        Math.max(1, stemN / 2), 0.5, 0.5, 0.5, 0.02);
+            }
+        }
+
+        // 4) cap bloom once the stem has lifted
+        if (tick > stemRiseEnd) {
+            double capAge = tick - stemRiseEnd;
+            double capGrow = Math.min(1.0, capAge / (18.0 / speedf));
+            double capNow = Math.max(1.5, capR * capGrow);
+            double capY = center.y + 1.0 + stemH + capAge * 0.3;
+            int capN = Math.max(1, (int) Math.round(3 * dens));
+            for (int i = 0; i < (int) (10 * dens); i++) {
+                double a = world.random.nextDouble() * Math.PI * 2;
+                double rd = world.random.nextDouble() * capNow;
+                world.spawnParticles(ModParticles.NUKE_CAP,
+                        center.x + Math.cos(a) * rd,
+                        capY + (world.random.nextDouble() - 0.3) * 1.4 * capGrow,
+                        center.z + Math.sin(a) * rd,
+                        capN, 0.5, 0.25, 0.5, 0.006);
+            }
+            // boiling under-belly + falling sparks + pulse
+            world.spawnParticles(ModParticles.NUKE_SMOKE,
+                    center.x, capY - 1.2 * capGrow, center.z,
+                    capN, capNow * 0.55, 0.3, capNow * 0.55, 0.005);
+            world.spawnParticles(ModParticles.NUKE_SPARK,
+                    center.x + (world.random.nextDouble() - 0.5) * capNow * 2,
+                    capY - 2.0 - world.random.nextDouble() * 3,
+                    center.z + (world.random.nextDouble() - 0.5) * capNow * 2,
+                    capN, 0.15, 0.35, 0.15, 0.01);
+            if (tick % 6 == 0) {
+                world.spawnParticles(ModParticles.NUKE_GLOW,
+                        center.x, capY, center.z, 2, capNow, 1.2, capNow, 0.0);
+            }
+            if (capGrow >= 1.0 && capAge > 60.0 / speedf && r > maxDist) {
+                done = true;
+            }
         }
     }
 

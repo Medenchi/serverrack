@@ -1,13 +1,18 @@
 package com.denchy.serverrack.client;
 
 import com.denchy.serverrack.client.render.ServerRackBlockEntityRenderer;
+import com.denchy.serverrack.client.screen.BoomMenuScreen;
+import com.denchy.serverrack.client.screen.NukeConfigScreen;
 import com.denchy.serverrack.client.screen.SmokeConfigScreen;
+import com.denchy.serverrack.det.NukeConfig;
 import com.denchy.serverrack.network.payload.BoomActionPayload;
 import com.denchy.serverrack.network.payload.ClearSmokeSyncPayload;
+import com.denchy.serverrack.network.payload.NukeConfigSyncPayload;
 import com.denchy.serverrack.network.payload.SmokeConfigSyncPayload;
 import com.denchy.serverrack.network.payload.TogglePcPayload;
 import com.denchy.serverrack.network.payload.ToggleRackPayload;
 import com.denchy.serverrack.particle.CeilingSmokeParticle;
+import com.denchy.serverrack.particle.NukeParticle;
 import com.denchy.serverrack.registry.ModBlockEntities;
 import com.denchy.serverrack.registry.ModBlocks;
 import com.denchy.serverrack.registry.ModParticles;
@@ -47,10 +52,31 @@ public class ServerRackClient implements ClientModInitializer {
     private static BlockPos lastHumPos = null;
     private static long lastHumGameTime = -100L;
 
+    /** Detonator hold-to-open: how long RMB must be held for the nuke settings (~1.5s). */
+    public static final long DET_HOLD_TICKS = 30;
+    private static long detHoldStart = -1L;
+    private static boolean detHoldConsumed = false;
+
+    /** Called by DetonatorItem on the client when RMB goes down. */
+    public static void beginDetonatorHold() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world != null) {
+            detHoldStart = client.world.getTime();
+            detHoldConsumed = false;
+        }
+    }
+
     @Override
     public void onInitializeClient() {
         // Particle
         ParticleFactoryRegistry.getInstance().register(ModParticles.CEILING_SMOKE, CeilingSmokeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_CAP, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_STEM, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_FIRE, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_RING, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_SMOKE, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_SPARK, NukeParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(ModParticles.NUKE_GLOW, NukeParticle.Factory::new);
 
         // BER
         BlockEntityRendererRegistry.register(ModBlockEntities.SERVER_RACK, ServerRackBlockEntityRenderer::new);
@@ -59,6 +85,12 @@ public class ServerRackClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(SmokeConfigSyncPayload.ID, (payload, context) -> {
             context.client().execute(() -> {
                 SmokeConfig.set(payload.frequency(), payload.count(), payload.radius(), payload.rise(), payload.density());
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(NukeConfigSyncPayload.ID, (payload, context) -> {
+            context.client().execute(() -> {
+                NukeConfig.set(payload.stem(), payload.cap(), payload.ring(), payload.density());
             });
         });
 
@@ -107,6 +139,22 @@ public class ServerRackClient implements ClientModInitializer {
             // Active racks hum their fans (client-local room tone for filming)
             if (client.world.getTime() % 10 == 0) {
                 tickRackHum(client);
+            }
+
+            // Detonator gesture disambiguation: tap = boom menu, long hold = nuke settings
+            if (detHoldStart >= 0) {
+                long now = client.world.getTime();
+                boolean held = client.options.useKey.isPressed();
+                if (!detHoldConsumed && held && now - detHoldStart >= DET_HOLD_TICKS) {
+                    detHoldConsumed = true;
+                    client.setScreen(new NukeConfigScreen());
+                } else if (!held) {
+                    if (!detHoldConsumed && now - detHoldStart < DET_HOLD_TICKS) {
+                        client.setScreen(new BoomMenuScreen());
+                    }
+                    detHoldStart = -1;
+                    detHoldConsumed = false;
+                }
             }
 
             // J = ALL racks in TOGGLE_RADIUS
