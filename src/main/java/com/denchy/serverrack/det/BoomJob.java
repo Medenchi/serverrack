@@ -159,12 +159,21 @@ public class BoomJob {
         boomFx(c);
     }
 
+    private void sound(Vec3d c, float vol, float pitch) {
+        world.playSound(null, BlockPos.ofFloored(c), SoundEvents.ENTITY_GENERIC_EXPLODE,
+                SoundCategory.BLOCKS, vol, pitch);
+    }
+
+    private void fireSound(Vec3d c, float vol, float pitch) {
+        world.playSound(null, BlockPos.ofFloored(c), SoundEvents.BLOCK_FIRE_AMBIENT,
+                SoundCategory.BLOCKS, vol, pitch);
+    }
+
     protected void boomFx(Vec3d c) {
         world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y, c.z, 1, 0, 0, 0, 0);
         world.spawnParticles(ParticleTypes.FLAME, c.x, c.y, c.z, 30, 1.2, 1.2, 1.2, 0.02);
         world.spawnParticles(ParticleTypes.LARGE_SMOKE, c.x, c.y, c.z, 25, 1.0, 1.0, 1.0, 0.02);
-        world.playSound(null, c.x, c.y, c.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                SoundCategory.BLOCKS, 4.0f, 0.6f + world.random.nextFloat() * 0.5f);
+        sound(c, 4.0f, 0.6f + world.random.nextFloat() * 0.5f);
     }
 
     protected void spawnPaper(BlockPos p) {
@@ -198,8 +207,7 @@ public class BoomJob {
                     world.random.nextGaussian() * r * 0.35,
                     world.random.nextGaussian() * r * 0.6);
             world.spawnParticles(ParticleTypes.FLAME, shell.x, shell.y, shell.z, 20, 1.5, 1.5, 1.5, 0.01);
-            world.playSound(null, shell.x, shell.y, shell.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.BLOCKS, 3.0f, 0.7f + world.random.nextFloat() * 0.4f);
+            sound(shell, 3.0f, 0.7f + world.random.nextFloat() * 0.4f);
         }
         if (tick % 4 == 0) {
             world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, center.x, center.y, center.z,
@@ -248,8 +256,7 @@ public class BoomJob {
         world.spawnParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, edge.x, edge.y, edge.z,
                 15, 0.4, 0.4, 0.4, 0.02);
         if (floor % 2 == 0) {
-            world.playSound(null, center.x, y, center.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.BLOCKS, 2.5f, 0.5f);
+            sound(new Vec3d(center.x, y, center.z), 2.5f, 0.5f);
         }
     }
 
@@ -282,8 +289,7 @@ public class BoomJob {
                 }
             }
             if (tick % 10 == 0) {
-                world.playSound(null, center.x, center.y, center.z, SoundEvents.BLOCK_FIRE_AMBIENT,
-                        SoundCategory.BLOCKS, 2.0f, 1.0f);
+                fireSound(center, 2.0f, 1.0f);
             }
             return;
         }
@@ -320,8 +326,7 @@ public class BoomJob {
                         3, 0.3, 0.4, 0.3, 0.02);
             }
             if (tick % 8 == 0) {
-                world.playSound(null, center.x, center.y, center.z, SoundEvents.BLOCK_FIRE_AMBIENT,
-                        SoundCategory.BLOCKS, 1.5f, 0.6f);
+                fireSound(center, 1.5f, 0.6f);
             }
             return;
         }
@@ -332,8 +337,7 @@ public class BoomJob {
                 world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, center.x,
                         center.y + world.random.nextDouble() * 3, center.z, 1, 0, 0, 0, 0);
             }
-            world.playSound(null, center.x, center.y, center.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.BLOCKS, 6.0f, 0.5f);
+            sound(center, 6.0f, 0.5f);
         }
         // carving wave inside the region (fast shockwave)
         double r = (tick - critTick) * 2.6 * speed;
@@ -408,8 +412,7 @@ public class BoomJob {
         }
         cursor = end;
         if (tick % 6 == 0) {
-            world.playSound(null, center.x, center.y, center.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.BLOCKS, 2.0f, 1.4f);
+            sound(center, 2.0f, 1.4f);
         }
     }
 
@@ -429,8 +432,7 @@ public class BoomJob {
             }
         }
         if (tick % 3 == 0) {
-            world.playSound(null, px + 0.5, center.y, center.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                    SoundCategory.BLOCKS, 1.5f, 1.8f);
+            sound(new Vec3d(px + 0.5, center.y, center.z), 1.5f, 1.8f);
         }
     }
 
