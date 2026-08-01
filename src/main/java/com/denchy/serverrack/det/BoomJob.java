@@ -179,7 +179,15 @@ public class BoomJob {
     }
 
     protected void spawnPaper(BlockPos p) {
-        Item[] scraps = {ModItems.PAPER_SCRAP_A, ModItems.PAPER_SCRAP_B, ModItems.PAPER_SCRAP_C};
+        // ordinary office sheets are common, the "exotic" scraps are rare
+        Item[] scraps = {
+                ModItems.PAPER_SCRAP_A, ModItems.PAPER_SCRAP_A, ModItems.PAPER_SCRAP_A,
+                ModItems.PAPER_SCRAP_B, ModItems.PAPER_SCRAP_B, ModItems.PAPER_SCRAP_B,
+                ModItems.PAPER_SCRAP_C, ModItems.PAPER_SCRAP_C, ModItems.PAPER_SCRAP_C,
+                ModItems.PAPER_SCRAP_D, ModItems.PAPER_SCRAP_D,
+                ModItems.PAPER_SCRAP_E,
+                ModItems.PAPER_SCRAP_F
+        };
         Item pick = scraps[world.random.nextInt(scraps.length)];
         ItemEntity it = new ItemEntity(world, p.getX() + 0.5, p.getY() + 0.8, p.getZ() + 0.5,
                 new ItemStack(pick));

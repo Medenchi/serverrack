@@ -22,6 +22,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -37,6 +39,13 @@ public class ServerRackClient implements ClientModInitializer {
 
     /** Radius in blocks for J (racks) and Z (PC walls) toggles. */
     public static final int TOGGLE_RADIUS = 32;
+
+    /** How near you must stand to hear the coolers spinning up. */
+    private static final int HUM_RADIUS = 20;
+    /** ~2.3 s between hum loops so the film set room-tone breathes instead of buzzing. */
+    private static final long HUM_PERIOD_TICKS = 46;
+    private static BlockPos lastHumPos = null;
+    private static long lastHumGameTime = -100L;
 
     @Override
     public void onInitializeClient() {
@@ -95,6 +104,11 @@ public class ServerRackClient implements ClientModInitializer {
             // Tick smoke manager
             CeilingSmokeManager.get(client.world).tick(client.world);
 
+            // Active racks hum their fans (client-local room tone for filming)
+            if (client.world.getTime() % 10 == 0) {
+                tickRackHum(client);
+            }
+
             // J = ALL racks in TOGGLE_RADIUS
             while (TOGGLE_KEY.wasPressed()) {
                 handleToggle(client);
@@ -138,6 +152,37 @@ public class ServerRackClient implements ClientModInitializer {
             client.player.sendMessage(Text.literal("§c[ServerRack] ПК-стены не найдены в радиусе " + TOGGLE_RADIUS + " блоков"), true);
         } else {
             client.player.sendMessage(Text.literal("§4[ServerRack] СЕРВЕРАМ ПИЗДА §c(пк-стен в радиусе " + TOGGLE_RADIUS + ": " + found + ")"), true);
+        }
+    }
+
+    /**
+     * Nearest ACTIVE rack within HUM_RADIUS loops a quiet cooler whir.
+     * Client-world playSound = local only, the server set stays silent.
+     */
+    private void tickRackHum(MinecraftClient client) {
+        BlockPos playerPos = client.player.getBlockPos();
+        BlockPos best = null;
+        double bestD = Double.MAX_VALUE;
+        BlockPos min = playerPos.add(-HUM_RADIUS, -HUM_RADIUS, -HUM_RADIUS);
+        BlockPos max = playerPos.add(HUM_RADIUS, HUM_RADIUS, HUM_RADIUS);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            var s = client.world.getBlockState(p);
+            if (!ModBlocks.isRack(s.getBlock())) continue;
+            if (!ModBlocks.isActiveState(s)) continue;
+            var info = ModBlocks.getLowerInfo(s, p);
+            if (info == null || !info.lowerPos().equals(p)) continue; // one voice per rack
+            double d = p.getSquaredDistance(playerPos);
+            if (d < bestD) { bestD = d; best = p.toImmutable(); }
+        }
+        if (best == null) { lastHumPos = null; return; }
+        long time = client.world.getTime();
+        // keep the loop going while standing near the same rack
+        if ((lastHumPos == null || !lastHumPos.equals(best)) || time - lastHumGameTime > HUM_PERIOD_TICKS) {
+            client.world.playSound(best.getX() + 0.5, best.getY() + 1.0, best.getZ() + 0.5,
+                    SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS,
+                    0.22f, 1.55f, true);
+            lastHumPos = best;
+            lastHumGameTime = time;
         }
     }
 

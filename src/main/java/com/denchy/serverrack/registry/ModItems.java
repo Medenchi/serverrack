@@ -22,6 +22,9 @@ public final class ModItems {
     public static final Item PAPER_SCRAP_A = registerItem("paper_scrap_a", new Item(new Item.Settings()));
     public static final Item PAPER_SCRAP_B = registerItem("paper_scrap_b", new Item(new Item.Settings()));
     public static final Item PAPER_SCRAP_C = registerItem("paper_scrap_c", new Item(new Item.Settings()));
+    public static final Item PAPER_SCRAP_D = registerItem("paper_scrap_d", new Item(new Item.Settings()));
+    public static final Item PAPER_SCRAP_E = registerItem("paper_scrap_e", new Item(new Item.Settings()));
+    public static final Item PAPER_SCRAP_F = registerItem("paper_scrap_f", new Item(new Item.Settings()));
 
     private static <T extends Item> T registerItem(String name, T item) {
         Registry.register(Registries.ITEM, ModId.of(name), item);
