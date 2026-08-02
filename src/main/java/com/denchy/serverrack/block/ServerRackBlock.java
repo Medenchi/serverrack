@@ -3,6 +3,7 @@ package com.denchy.serverrack.block;
 import com.denchy.serverrack.blockentity.ServerRackBlockEntity;
 import com.denchy.serverrack.registry.ModBlockEntities;
 import net.minecraft.block.Block;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -43,6 +44,11 @@ public class ServerRackBlock extends BlockWithEntity {
 
     private static final VoxelShape SHAPE =
             VoxelShapes.cuboid(0.0625, 0.0, 0.0625, 0.9375, 1.0, 0.9375);
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return createCodec(ServerRackBlock::new);
+    }
 
     public ServerRackBlock(Settings settings) {
         super(settings);
@@ -86,7 +92,7 @@ public class ServerRackBlock extends BlockWithEntity {
     }
 
     @Override
-    protected BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         RackHalf half = state.get(HALF);
         BlockPos other = half == RackHalf.LOWER ? pos.up() : pos.down();
         BlockState otherState = world.getBlockState(other);
