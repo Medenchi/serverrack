@@ -47,19 +47,26 @@ public class RockstarSignTool extends Item {
     }
 
     private void createSign(World world, BlockPos p1, BlockPos p2, String type) {
-        int minX = Math.min(p1.getX(), p2.getX());
-        int maxX = Math.max(p1.getX(), p2.getX());
-        int minY = Math.min(p1.getY(), p2.getY());
-        int maxY = Math.max(p1.getY(), p2.getY());
-        int minZ = Math.min(p1.getZ(), p2.getZ());
+        BlockPos min = new BlockPos(
+                Math.min(p1.getX(), p2.getX()),
+                Math.min(p1.getY(), p2.getY()),
+                Math.min(p1.getZ(), p2.getZ())
+        );
+        BlockPos max = new BlockPos(
+                Math.max(p1.getX(), p2.getX()),
+                Math.max(p1.getY(), p2.getY()),
+                Math.max(p1.getZ(), p2.getZ())
+        );
 
-        int width = maxX - minX + 1;
-        int height = maxY - minY + 1;
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                BlockPos placePos = new BlockPos(minX + x, minY + y, minZ);
-                world.setBlockState(placePos, RockstarSignBlock.INSTANCE.getDefaultState());
+        if (type.equals("ROCKSTAR")) {
+            com.denchy.serverrack.block.rockstar.RockstarSignGenerator.generateRockstarSign(world, min, max);
+        } else {
+            // Для остальных типов пока просто заполняем
+            for (int x = min.getX(); x <= max.getX(); x++) {
+                for (int y = min.getY(); y <= max.getY(); y++) {
+                    BlockPos pos = new BlockPos(x, y, min.getZ());
+                    world.setBlockState(pos, RockstarSignBlock.INSTANCE.getDefaultState());
+                }
             }
         }
     }

@@ -9,9 +9,9 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 
 public class RockstarSignBlock extends Block {
-    public static final RockstarSignBlock INSTANCE = new RockstarSignBlock(Settings.create().strength(3.0f));
+    public static final RockstarSignBlock INSTANCE = new RockstarSignBlock(Settings.create().strength(3.0f).nonOpaque().luminance(s -> 8));
 
-    private static final VoxelShape SHAPE = VoxelShapes.cuboid(0, 0, 0, 1, 3, 0.3);
+    private static final VoxelShape SHAPE = VoxelShapes.cuboid(0, 0, 0, 1, 1, 0.4);
 
     public RockstarSignBlock(Settings settings) {
         super(settings);
