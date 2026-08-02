@@ -1,5 +1,6 @@
 package com.denchy.serverrack.registry;
 
+import com.denchy.serverrack.det.NukeConfig;
 import com.denchy.serverrack.network.payload.*;
 import com.denchy.serverrack.smoke.SmokeConfig;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -14,11 +15,16 @@ public final class ModNetworking {
         // Register C2S
         PayloadTypeRegistry.playC2S().register(SmokeConfigPayload.ID, SmokeConfigPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ToggleRackPayload.ID, ToggleRackPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(TogglePcPayload.ID, TogglePcPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(ClearSmokePayload.ID, ClearSmokePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(BoomActionPayload.ID, BoomActionPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NukeConfigPayload.ID, NukeConfigPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(AkErrorPayload.ID, AkErrorPayload.CODEC);
 
         // Register S2C
         PayloadTypeRegistry.playS2C().register(SmokeConfigSyncPayload.ID, SmokeConfigSyncPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ClearSmokeSyncPayload.ID, ClearSmokeSyncPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(NukeConfigSyncPayload.ID, NukeConfigSyncPayload.CODEC);
 
         // Handlers
         ServerPlayNetworking.registerGlobalReceiver(SmokeConfigPayload.ID, (payload, context) -> {
@@ -35,7 +41,21 @@ public final class ModNetworking {
         ServerPlayNetworking.registerGlobalReceiver(ToggleRackPayload.ID, (payload, context) -> {
             context.server().execute(() -> {
                 var world = context.player().getWorld();
-                ModBlocks.toggleAt(world, payload.pos());
+                ModBlocks.toggleRacksInRadius(world, payload.pos(), payload.radius());
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(TogglePcPayload.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                var world = context.player().getWorld();
+                ModBlocks.togglePcsInRadius(world, payload.pos(), payload.radius());
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(AkErrorPayload.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                var world = context.player().getWorld();
+                ModBlocks.toggleAksInRadius(world, payload.pos(), payload.radius());
             });
         });
 
@@ -52,6 +72,16 @@ public final class ModNetworking {
             });
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(NukeConfigPayload.ID, (payload, context) -> {
+            context.server().execute(() -> {
+                NukeConfig.set(payload.stem(), payload.cap(), payload.ring(), payload.density());
+                var sync = new NukeConfigSyncPayload(payload.stem(), payload.cap(), payload.ring(), payload.density());
+                for (ServerPlayerEntity p : context.server().getPlayerManager().getPlayerList()) {
+                    ServerPlayNetworking.send(p, sync);
+                }
+            });
+        });
+
         // On join, sync current config
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             var sync = new SmokeConfigSyncPayload(
@@ -62,6 +92,8 @@ public final class ModNetworking {
                     SmokeConfig.maxDensity
             );
             sender.sendPacket(sync);
+            sender.sendPacket(new NukeConfigSyncPayload(
+                    NukeConfig.stemHeight, NukeConfig.capRadius, NukeConfig.ringRadius, NukeConfig.density));
         });
     }
 }

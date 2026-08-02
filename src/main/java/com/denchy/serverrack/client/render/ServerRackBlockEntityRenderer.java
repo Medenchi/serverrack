@@ -138,16 +138,16 @@ public class ServerRackBlockEntityRenderer implements BlockEntityRenderer<Server
         // Actually we need to get buffer with proper layer; for now we render with color
 
         // Blade 1
-        vc.vertex(mat, -s, -0.02f, 0).color(180, 180, 180, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, s, -0.02f, 0).color(180, 180, 180, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, s, 0.02f, 0).color(180, 180, 180, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, -s, 0.02f, 0).color(180, 180, 180, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1).next();
+        vc.vertex(mat, -s, -0.02f, 0).color(180, 180, 180, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, s, -0.02f, 0).color(180, 180, 180, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, s, 0.02f, 0).color(180, 180, 180, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, -s, 0.02f, 0).color(180, 180, 180, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1);
 
         // Blade 2 vertical
-        vc.vertex(mat, -0.02f, -s, 0).color(160, 160, 160, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, 0.02f, -s, 0).color(160, 160, 160, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, 0.02f, s, 0).color(160, 160, 160, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1).next();
-        vc.vertex(mat, -0.02f, s, 0).color(160, 160, 160, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1).next();
+        vc.vertex(mat, -0.02f, -s, 0).color(160, 160, 160, 220).texture(0,0).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, 0.02f, -s, 0).color(160, 160, 160, 220).texture(1,0).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, 0.02f, s, 0).color(160, 160, 160, 220).texture(1,1).overlay(overlay).light(light).normal(0,0,1);
+        vc.vertex(mat, -0.02f, s, 0).color(160, 160, 160, 220).texture(0,1).overlay(overlay).light(light).normal(0,0,1);
     }
 
     private void renderLEDs(MatrixStack matrices, VertexConsumerProvider vcp, int light, int overlay, boolean blinkFast, boolean blinkSlow, boolean active, Direction facing) {
@@ -204,10 +204,10 @@ public class ServerRackBlockEntityRenderer implements BlockEntityRenderer<Server
             int r = col[0], g = col[1], b = col[2], a = active ? 255 : 120;
 
             // Render quad
-            vc.vertex(mat, x0, y0, z).color(r, g, b, a).texture(0,0).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
-            vc.vertex(mat, x1, y0, z).color(r, g, b, a).texture(1,0).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
-            vc.vertex(mat, x1, y1, z).color(r, g, b, a).texture(1,1).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
-            vc.vertex(mat, x0, y1, z).color(r, g, b, a).texture(0,1).overlay(overlay).light(0xF000F0).normal(0,0,1).next();
+            vc.vertex(mat, x0, y0, z).color(r, g, b, a).texture(0,0).overlay(overlay).light(0xF000F0).normal(0,0,1);
+            vc.vertex(mat, x1, y0, z).color(r, g, b, a).texture(1,0).overlay(overlay).light(0xF000F0).normal(0,0,1);
+            vc.vertex(mat, x1, y1, z).color(r, g, b, a).texture(1,1).overlay(overlay).light(0xF000F0).normal(0,0,1);
+            vc.vertex(mat, x0, y1, z).color(r, g, b, a).texture(0,1).overlay(overlay).light(0xF000F0).normal(0,0,1);
         }
     }
 }
