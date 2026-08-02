@@ -11,27 +11,24 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 
-/** Generic small room decor: fixed voxel shape, optional horizontal facing. */
+/** Generic small room decor. All decor blocks now always support facing to avoid registry issues. */
 public class DecorBlock extends Block {
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 
     private final VoxelShape shape;
-    private final boolean hasFacing;
 
     public DecorBlock(Settings settings, VoxelShape shape, boolean hasFacing) {
         super(settings);
         this.shape = shape;
-        this.hasFacing = hasFacing;
     }
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING); // Всегда регистрируем, чтобы избежать intrusive holder
+        builder.add(FACING);
     }
 
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        if (!hasFacing) return getDefaultState();
         return getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
     }
 
