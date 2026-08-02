@@ -22,10 +22,6 @@ public class DecorBlock extends Block {
         super(settings);
         this.shape = shape;
         this.hasFacing = hasFacing;
-        if (hasFacing) {
-            setDefaultState(getStateManager().getDefaultState().with(FACING,
-                    net.minecraft.util.math.Direction.NORTH));
-        }
     }
 
     @Override
@@ -33,6 +29,12 @@ public class DecorBlock extends Block {
         if (hasFacing) {
             builder.add(FACING);
         }
+    }
+
+    @Override
+    public BlockState getPlacementState(ItemPlacementContext ctx) {
+        if (!hasFacing) return getDefaultState();
+        return getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
     }
 
     @Override
