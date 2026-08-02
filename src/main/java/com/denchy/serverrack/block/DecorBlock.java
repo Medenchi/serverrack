@@ -41,10 +41,4 @@ public class DecorBlock extends Block {
     protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return shape;
     }
-
-    @Override
-    public BlockState getPlacementState(net.minecraft.item.ItemPlacementContext ctx) {
-        if (!hasFacing) return getDefaultState();
-        return getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
-    }
 }
