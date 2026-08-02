@@ -9,7 +9,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class RockstarSignTool extends Item {
+
     private static BlockPos pos1 = null;
+    private static String currentType = "rockstar"; // rockstar, server, pc, ak
 
     public RockstarSignTool(Settings settings) {
         super(settings);
@@ -24,28 +26,37 @@ public class RockstarSignTool extends Item {
 
         if (pos1 == null) {
             pos1 = pos;
-            context.getPlayer().sendMessage(Text.literal("§a[Rockstar] Первая точка установлена"), false);
+            context.getPlayer().sendMessage(Text.literal("§a[Rockstar Tool] Первая точка установлена §7(" + currentType + ")"), false);
         } else {
             BlockPos pos2 = pos;
-            // Создаём вывеску между двумя точками
-            int minX = Math.min(pos1.getX(), pos2.getX());
-            int maxX = Math.max(pos1.getX(), pos2.getX());
-            int minY = Math.min(pos1.getY(), pos2.getY());
-            int maxY = Math.max(pos1.getY(), pos2.getY());
-            int minZ = Math.min(pos1.getZ(), pos2.getZ());
-            int maxZ = Math.max(pos1.getZ(), pos2.getZ());
-
-            // Простая реализация: ставим блок в центре
-            BlockPos center = new BlockPos(
-                    (minX + maxX) / 2,
-                    (minY + maxY) / 2,
-                    (minZ + maxZ) / 2
-            );
-
-            world.setBlockState(center, RockstarSignBlock.INSTANCE.getDefaultState());
-            context.getPlayer().sendMessage(Text.literal("§a[Rockstar] Вывеска создана!"), false);
+            createSign(world, pos1, pos2, currentType);
+            context.getPlayer().sendMessage(Text.literal("§a[Rockstar Tool] Вывеска создана!"), false);
             pos1 = null;
         }
         return ActionResult.SUCCESS;
     }
+
+    private void createSign(World world, BlockPos p1, BlockPos p2, String type) {
+        int minX = Math.min(p1.getX(), p2.getX());
+        int maxX = Math.max(p1.getX(), p2.getX());
+        int minY = Math.min(p1.getY(), p2.getY());
+        int maxY = Math.max(p1.getY(), p2.getY());
+        int minZ = Math.min(p1.getZ(), p2.getZ());
+        int maxZ = Math.max(p1.getZ(), p2.getZ());
+
+        int width = maxX - minX + 1;
+        int height = maxY - minY + 1;
+
+        // Простая генерация вывески ROCKSTAR (позже сделаем нормальные буквы)
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                BlockPos placePos = new BlockPos(minX + x, minY + y, minZ);
+                if (type.equals("rockstar")) {
+                    world.setBlockState(placePos, RockstarSignBlock.INSTANCE.getDefaultState());
+                }
+            }
+        }
+    }
+
+    // Можно будет расширить: выбор типа через shift + ПКМ
 }
