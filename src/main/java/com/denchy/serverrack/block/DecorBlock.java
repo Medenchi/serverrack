@@ -26,9 +26,7 @@ public class DecorBlock extends Block {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        if (hasFacing) {
-            builder.add(FACING);
-        }
+        builder.add(FACING); // Всегда регистрируем, чтобы избежать intrusive holder
     }
 
     @Override
