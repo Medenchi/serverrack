@@ -55,6 +55,9 @@ public final class ModBlocks {
                     net.minecraft.util.shape.VoxelShapes.cuboid(0.125, 0, 0.25, 0.875, 0.1875, 0.75),
                     net.minecraft.util.shape.VoxelShapes.cuboid(0.6875, 0, 0.4375, 0.75, 0.625, 0.5)), false);
 
+    public static final com.denchy.serverrack.block.rockstar.RockstarSignBlock ROCKSTAR_SIGN =
+            registerRockstar("rockstar_sign");
+
     private static AkMonitorBlock registerAkMonitor(String name) {
         AbstractBlock.Settings settings = AbstractBlock.Settings.create()
                 .mapColor(MapColor.BLACK)
@@ -135,6 +138,14 @@ public final class ModBlocks {
         Identifier id = ModId.of(name);
         Registry.register(Registries.BLOCK, id, block);
         RACKS.add(block);
+        return block;
+    }
+
+    private static com.denchy.serverrack.block.rockstar.RockstarSignBlock registerRockstar(String name) {
+        com.denchy.serverrack.block.rockstar.RockstarSignBlock block =
+                new com.denchy.serverrack.block.rockstar.RockstarSignBlock(
+                        AbstractBlock.Settings.create().strength(3.0f).nonOpaque());
+        Registry.register(Registries.BLOCK, ModId.of(name), block);
         return block;
     }
 

@@ -19,6 +19,8 @@ public final class ModItems {
     // Director module
     public static final Item DETONATOR = registerItem("detonator",
             new DetonatorItem(new Item.Settings().maxCount(1)));
+    public static final Item ROCKSTAR_TOOL = registerItem("rockstar_tool",
+            new com.denchy.serverrack.item.RockstarSignTool(new Item.Settings().maxCount(1)));
     public static final Item PAPER_SCRAP_A = registerItem("paper_scrap_a", new Item(new Item.Settings()));
     public static final Item PAPER_SCRAP_B = registerItem("paper_scrap_b", new Item(new Item.Settings()));
     public static final Item PAPER_SCRAP_C = registerItem("paper_scrap_c", new Item(new Item.Settings()));
@@ -57,5 +59,6 @@ public final class ModItems {
         addBlockItem("decor_plant", ModBlocks.DECOR_PLANT);
         addBlockItem("decor_papers", ModBlocks.DECOR_PAPERS);
         addBlockItem("decor_router", ModBlocks.DECOR_ROUTER);
+        addBlockItem("rockstar_sign", ModBlocks.ROCKSTAR_SIGN);
     }
 }

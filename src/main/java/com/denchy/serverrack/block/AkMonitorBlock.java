@@ -21,9 +21,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Standalone floor monitor, 2 wide x 2 tall, on a central stand.
- * 30s GTA-6 style loading loop; X key flips it to a fullscreen red
- * "ОШИБКА ЗАГРУЗКИ!" (ERROR state) and back.
+ * 2×1 AK монитор (для GTA-сцены)
  */
 public class AkMonitorBlock extends Block {
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
@@ -31,8 +29,8 @@ public class AkMonitorBlock extends Block {
     public static final EnumProperty<AkPart> PART = EnumProperty.of("part", AkPart.class);
 
     private static final VoxelShape SHAPE = VoxelShapes.union(
-            VoxelShapes.cuboid(0.0, 0.0, 0.4, 1.0, 1.0, 0.62),  // screen chassis
-            VoxelShapes.cuboid(0.32, 0.0, 0.45, 0.68, 0.4, 0.9) // stand silhouette
+            VoxelShapes.cuboid(0.0, 0.0, 0.4, 1.0, 1.0, 0.62),
+            VoxelShapes.cuboid(0.32, 0.0, 0.45, 0.68, 0.4, 0.9)
     );
 
     public AkMonitorBlock(Settings settings) {
@@ -40,7 +38,7 @@ public class AkMonitorBlock extends Block {
         setDefaultState(getStateManager().getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(ERROR, false)
-                .with(PART, AkPart.R_BOTTOM));
+                .with(PART, AkPart.BOTTOM));
     }
 
     @Override
@@ -79,7 +77,7 @@ public class AkMonitorBlock extends Block {
         }
         return getDefaultState()
                 .with(FACING, facing)
-                .with(PART, AkPart.R_BOTTOM)
+                .with(PART, AkPart.BOTTOM)
                 .with(ERROR, false);
     }
 
@@ -87,7 +85,7 @@ public class AkMonitorBlock extends Block {
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         Direction facing = state.get(FACING);
         for (AkPart part : AkPart.values()) {
-            if (part == AkPart.R_BOTTOM) continue;
+            if (part == AkPart.BOTTOM) continue;
             world.setBlockState(targetPos(pos, facing, part), state.with(PART, part), Block.NOTIFY_ALL);
         }
     }
@@ -107,7 +105,6 @@ public class AkMonitorBlock extends Block {
         return super.onBreak(world, pos, state, player);
     }
 
-    /** Set ERROR on every part of the structure with that origin. */
     public static void setErrorStructure(World world, BlockPos origin, boolean error) {
         BlockState originState = world.getBlockState(origin);
         if (!(originState.getBlock() instanceof AkMonitorBlock)) return;

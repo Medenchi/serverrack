@@ -3,15 +3,11 @@ package com.denchy.serverrack.block;
 import net.minecraft.util.StringIdentifiable;
 
 /**
- * Parts of the 2x2 AK monitor: dx = cells along the placed axis
- * (facing.rotateYClockwise, +1 = viewer-left), dy = rows above the floor.
- * origin = viewer-right-bottom ("r0").
+ * 2×1 AK monitor (для GTA-сцены)
  */
 public enum AkPart implements StringIdentifiable {
-    R_BOTTOM("r0", 0, 0),
-    L_BOTTOM("l0", 1, 0),
-    R_TOP("r1", 0, 1),
-    L_TOP("l1", 1, 1);
+    BOTTOM("bottom", 0, 0),
+    TOP("top", 0, 1);
 
     private final String name;
     private final int dx;
@@ -27,6 +23,5 @@ public enum AkPart implements StringIdentifiable {
     public String asString() { return name; }
 
     public int dx() { return dx; }
-
     public int dy() { return dy; }
 }

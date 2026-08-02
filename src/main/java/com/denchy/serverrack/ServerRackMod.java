@@ -32,6 +32,7 @@ public class ServerRackMod implements ModInitializer {
         ModNetworking.registerServer();
         BoomManager.register();
         AkChairBlock.registerEvents();
+        com.denchy.serverrack.command.GribCommand.register();
         LOGGER.info("[Server Rack] Ready.");
     }
 }
