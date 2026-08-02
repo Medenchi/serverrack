@@ -25,7 +25,7 @@ public final class ModBlocks {
 
     public static final List<Block> RACKS = new ArrayList<>();
 
-    // === Объявляем как null, регистрируем позже ===
+    // === Объявляем как null, регистрируем только в register() ===
     public static ServerRackBlock RACK_BASIC;
     public static BigServerRackBlock RACK_ADVANCED;
     public static MainframeRackBlock RACK_MAINFRAME;
@@ -42,9 +42,8 @@ public final class ModBlocks {
 
     public static com.denchy.serverrack.block.rockstar.RockstarSignBlock ROCKSTAR_SIGN;
 
+    /** Главный метод регистрации всех блоков */
     public static void register() {
-        // === ВАЖНО: все блоки регистрируются строго в одном месте и в одном порядке ===
-
         RACK_BASIC = registerSmall("server_rack_basic");
         RACK_ADVANCED = registerBig("server_rack_advanced");
         RACK_MAINFRAME = registerMainframe("server_rack_mainframe");
@@ -150,7 +149,116 @@ public final class ModBlocks {
         return block;
     }
 
-    // === Остальной код без изменений ===
-    public static void toggleAt(World world, BlockPos anyPos) { /* ... */ }
-    // ... (остальной код оставлен для краткости)
+    // === Вспомогательные методы (оставлены как были) ===
+
+    public record LowerInfo(BlockPos lowerPos, int height) {}
+
+    public static LowerInfo getLowerInfo(BlockState state, BlockPos pos) {
+        var block = state.getBlock();
+        if (block instanceof ServerRackBlock b) return new LowerInfo(b.lowerPos(state, pos), b.height());
+        if (block instanceof BigServerRackBlock b) return new LowerInfo(b.lowerPos(state, pos), b.height());
+        if (block instanceof MainframeRackBlock b) return new LowerInfo(b.lowerPos(state, pos), b.height());
+        return null;
+    }
+
+    public static boolean isRack(Block block) {
+        return block instanceof ServerRackBlock || block instanceof BigServerRackBlock || block instanceof MainframeRackBlock;
+    }
+
+    public static boolean isPc(Block block) {
+        return block instanceof PcWallBlock;
+    }
+
+    public static boolean isAk(Block block) {
+        return block instanceof AkMonitorBlock;
+    }
+
+    public static boolean isActiveState(BlockState state) {
+        Block block = state.getBlock();
+        if (block instanceof ServerRackBlock) return state.get(ServerRackBlock.ACTIVE);
+        if (block instanceof BigServerRackBlock) return state.get(BigServerRackBlock.ACTIVE);
+        if (block instanceof MainframeRackBlock) return state.get(MainframeRackBlock.ACTIVE);
+        if (block instanceof PcWallBlock) return state.get(PcWallBlock.ALERT);
+        return false;
+    }
+
+    public static int toggleRacksInRadius(World world, BlockPos center, int radius) {
+        Set<BlockPos> lowers = new LinkedHashSet<>();
+        BlockPos min = center.add(-radius, -radius, -radius);
+        BlockPos max = center.add(radius, radius, radius);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            BlockState s = world.getBlockState(p);
+            if (!isRack(s.getBlock())) continue;
+            LowerInfo info = getLowerInfo(s, p);
+            if (info != null) lowers.add(info.lowerPos().toImmutable());
+        }
+        if (lowers.isEmpty()) return 0;
+        boolean anyInactive = false;
+        for (BlockPos lp : lowers) {
+            if (!isActiveState(world.getBlockState(lp))) { anyInactive = true; break; }
+        }
+        boolean target = anyInactive;
+        for (BlockPos lp : lowers) {
+            boolean cur = isActiveState(world.getBlockState(lp));
+            if (cur != target) toggleAt(world, lp);
+        }
+        return lowers.size();
+    }
+
+    public static int togglePcsInRadius(World world, BlockPos center, int radius) {
+        Set<BlockPos> origins = new LinkedHashSet<>();
+        BlockPos min = center.add(-radius, -radius, -radius);
+        BlockPos max = center.add(radius, radius, radius);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            BlockState s = world.getBlockState(p);
+            if (!(s.getBlock() instanceof PcWallBlock)) continue;
+            origins.add(PcWallBlock.getOrigin(s, p));
+        }
+        if (origins.isEmpty()) return 0;
+        boolean anyCalm = false;
+        for (BlockPos o : origins) {
+            BlockState s = world.getBlockState(o);
+            if (s.getBlock() instanceof PcWallBlock && !s.get(PcWallBlock.ALERT)) { anyCalm = true; break; }
+        }
+        boolean target = anyCalm;
+        for (BlockPos o : origins) {
+            PcWallBlock.setAlertStructure(world, o, target);
+        }
+        PcWallBlock.playAlertSound(world, center, target);
+        return origins.size();
+    }
+
+    public static int toggleAksInRadius(World world, BlockPos center, int radius) {
+        Set<BlockPos> origins = new LinkedHashSet<>();
+        BlockPos min = center.add(-radius, -radius, -radius);
+        BlockPos max = center.add(radius, radius, radius);
+        for (BlockPos p : BlockPos.iterate(min, max)) {
+            BlockState s = world.getBlockState(p);
+            if (!(s.getBlock() instanceof AkMonitorBlock)) continue;
+            origins.add(AkMonitorBlock.getOrigin(s, p));
+        }
+        if (origins.isEmpty()) return 0;
+        boolean anyNormal = false;
+        for (BlockPos o : origins) {
+            BlockState s = world.getBlockState(o);
+            if (s.getBlock() instanceof AkMonitorBlock && !s.get(AkMonitorBlock.ERROR)) { anyNormal = true; break; }
+        }
+        boolean target = anyNormal;
+        for (BlockPos o : origins) {
+            AkMonitorBlock.setErrorStructure(world, o, target);
+        }
+        PcWallBlock.playAlertSound(world, center, target);
+        return origins.size();
+    }
+
+    public static void toggleAt(World world, BlockPos anyPos) {
+        BlockState state = world.getBlockState(anyPos);
+        LowerInfo info = getLowerInfo(state, anyPos);
+        if (info == null) return;
+        BlockState lowerState = world.getBlockState(info.lowerPos());
+        Block lowerBlock = lowerState.getBlock();
+        if (lowerBlock instanceof ServerRackBlock) ServerRackBlock.toggleActive(world, info.lowerPos());
+        else if (lowerBlock instanceof BigServerRackBlock) BigServerRackBlock.toggleActive(world, info.lowerPos());
+        else if (lowerBlock instanceof MainframeRackBlock) MainframeRackBlock.toggleActive(world, info.lowerPos());
+    }
 }
