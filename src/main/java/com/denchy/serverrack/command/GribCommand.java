@@ -18,19 +18,61 @@ public class GribCommand {
                         ctx.getSource().sendFeedback(() -> Text.literal("ok"), false);
                         return 1;
                     })
+                    .then(CommandManager.literal("stem")
+                            .then(CommandManager.argument("value", IntegerArgumentType.integer(NukeConfig.STEM_MIN, NukeConfig.STEM_MAX))
+                                    .executes(c -> {
+                                        int v = IntegerArgumentType.getInteger(c, "value");
+                                        NukeConfig.set(v, NukeConfig.capRadius, NukeConfig.ringRadius, NukeConfig.density);
+                                        broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
+                                        c.getSource().sendFeedback(() -> Text.literal("stem=" + v), false);
+                                        return 1;
+                                    })))
+                    .then(CommandManager.literal("cap")
+                            .then(CommandManager.argument("value", IntegerArgumentType.integer(NukeConfig.CAP_MIN, NukeConfig.CAP_MAX))
+                                    .executes(c -> {
+                                        int v = IntegerArgumentType.getInteger(c, "value");
+                                        NukeConfig.set(NukeConfig.stemHeight, v, NukeConfig.ringRadius, NukeConfig.density);
+                                        broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
+                                        c.getSource().sendFeedback(() -> Text.literal("cap=" + v), false);
+                                        return 1;
+                                    })))
+                    .then(CommandManager.literal("ring")
+                            .then(CommandManager.argument("value", IntegerArgumentType.integer(NukeConfig.RING_MIN, NukeConfig.RING_MAX))
+                                    .executes(c -> {
+                                        int v = IntegerArgumentType.getInteger(c, "value");
+                                        NukeConfig.set(NukeConfig.stemHeight, NukeConfig.capRadius, v, NukeConfig.density);
+                                        broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
+                                        c.getSource().sendFeedback(() -> Text.literal("ring=" + v), false);
+                                        return 1;
+                                    })))
+                    .then(CommandManager.literal("density")
+                            .then(CommandManager.argument("value", IntegerArgumentType.integer(NukeConfig.DENSITY_MIN, NukeConfig.DENSITY_MAX))
+                                    .executes(c -> {
+                                        int v = IntegerArgumentType.getInteger(c, "value");
+                                        NukeConfig.set(NukeConfig.stemHeight, NukeConfig.capRadius, NukeConfig.ringRadius, v);
+                                        broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
+                                        c.getSource().sendFeedback(() -> Text.literal("density=" + v), false);
+                                        return 1;
+                                    })))
                     .then(CommandManager.literal("set")
-                            .then(CommandManager.argument("a", IntegerArgumentType.integer(1, 40))
-                                    .then(CommandManager.argument("b", IntegerArgumentType.integer(1, 40))
-                                            .then(CommandManager.argument("c", IntegerArgumentType.integer(1, 40))
-                                                    .then(CommandManager.argument("d", IntegerArgumentType.integer(1, 40))
+                            .then(CommandManager.argument("a", IntegerArgumentType.integer(NukeConfig.STEM_MIN, NukeConfig.STEM_MAX))
+                                    .then(CommandManager.argument("b", IntegerArgumentType.integer(NukeConfig.CAP_MIN, NukeConfig.CAP_MAX))
+                                            .then(CommandManager.argument("c", IntegerArgumentType.integer(NukeConfig.RING_MIN, NukeConfig.RING_MAX))
+                                                    .then(CommandManager.argument("d", IntegerArgumentType.integer(NukeConfig.DENSITY_MIN, NukeConfig.DENSITY_MAX))
                                                             .executes(c -> {
                                                                 int a = IntegerArgumentType.getInteger(c, "a");
                                                                 int b = IntegerArgumentType.getInteger(c, "b");
                                                                 int cc = IntegerArgumentType.getInteger(c, "c");
                                                                 int d = IntegerArgumentType.getInteger(c, "d");
+                                                                NukeConfig.set(a, b, cc, d);
+                                                                broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
                                                                 c.getSource().sendFeedback(() -> Text.literal("set " + a + " " + b + " " + cc + " " + d), false);
                                                                 return 1;
-                                                            })))))));
+                                                            }))))));
         });
+    }
+    private static void broadcast(List<ServerPlayerEntity> players) {
+        NukeConfigSyncPayload sync = new NukeConfigSyncPayload(NukeConfig.stemHeight, NukeConfig.capRadius, NukeConfig.ringRadius, NukeConfig.density);
+        for (ServerPlayerEntity p : players) ServerPlayNetworking.send(p, sync);
     }
 }
