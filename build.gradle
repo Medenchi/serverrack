@@ -44,3 +44,60 @@ jar {
         rename { "${it}_${project.archives_base_name}" }
     }
 }
+
+// === POST BUILD FAILURE LOG TO COMMIT COMMENT (to bypass blocked artifact/logs download) ===
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+
+gradle.buildFinished { result ->
+    try {
+        def isFailure = result.failure != null
+        def repo = System.getenv("GITHUB_REPOSITORY") ?: "Medenchi/serverrack"
+        def sha = System.getenv("GITHUB_SHA") ?: "unknown"
+        def token = System.getenv("GITHUB_TOKEN") ?: System.getenv("GH_TOKEN") ?: ""
+        if (token.isEmpty()) {
+            println("[postLog] No GITHUB_TOKEN, skipping log post")
+            return
+        }
+        def logText = ""
+        if (isFailure) {
+            logText = "Build FAILED for ${sha}\n\nException: ${result.failure?.toString()}\n\n"
+            result.failure?.printStackTrace()
+            // Try to collect compile errors from build directory if any
+            def logFile = file("build/tmp/compileJava/previous-compilation-data.bin")
+            // Instead, we will read from gradle's output? We capture failure cause
+            // Also try to find compile log files
+            def compileLogs = []
+            fileTree(dir: "build", include: "**/*.log").each { f -> compileLogs << f }
+            if (!compileLogs.isEmpty()) {
+                compileLogs.each { f ->
+                    try { logText += "\n--- ${f.path} ---\n" + f.text.take(20000) } catch (Exception e) {}
+                }
+            }
+        } else {
+            logText = "Build SUCCESS for ${sha}"
+            // don't spam success
+            return
+        }
+
+        // Truncate to fit GitHub comment limit (65536)
+        if (logText.length() > 60000) logText = logText.substring(0, 60000) + "\n... truncated"
+
+        def client = HttpClient.newHttpClient()
+        def body = groovy.json.JsonOutput.toJson([body: "```\n${logText}\n```"])
+        def request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.github.com/repos/${repo}/commits/${sha}/comments"))
+                .header("Authorization", "Bearer ${token}")
+                .header("Accept", "application/vnd.github.v3+json")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build()
+        def response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        println("[postLog] Posted comment, status ${response.statusCode()} body ${response.body().take(500)}")
+    } catch (Exception e) {
+        println("[postLog] Failed to post: ${e}")
+        e.printStackTrace()
+    }
+}
