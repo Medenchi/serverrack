@@ -1,0 +1,284 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "case": "serverrack:block/pc_case",
+    "bezel": "serverrack:block/pc_bezel",
+    "ledb": "serverrack:block/led_blue",
+    "leda": "serverrack:block/led_amber",
+    "ledr": "serverrack:block/led_red",
+    "particle": "serverrack:block/pc_case",
+    "screen": "serverrack:block/pc_screen_solo"
+  },
+  "elements": [
+    {
+      "name": "back_panel",
+      "from": [
+        1.0,
+        4.25,
+        8.1
+      ],
+      "to": [
+        15.0,
+        12.25,
+        8.63
+      ],
+      "faces": {
+        "north": {
+          "texture": "#case"
+        },
+        "east": {
+          "texture": "#case"
+        },
+        "south": {
+          "texture": "#case"
+        },
+        "west": {
+          "texture": "#case"
+        },
+        "up": {
+          "texture": "#case"
+        },
+        "down": {
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "bezel_l",
+      "from": [
+        0.88,
+        4.42,
+        7.98
+      ],
+      "to": [
+        1.0,
+        12.1,
+        8.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_r",
+      "from": [
+        15.0,
+        4.42,
+        7.98
+      ],
+      "to": [
+        15.12,
+        12.1,
+        8.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_t",
+      "from": [
+        1.0,
+        12.2,
+        7.98
+      ],
+      "to": [
+        15.0,
+        12.32,
+        8.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "bezel_b",
+      "from": [
+        1.0,
+        4.18,
+        7.98
+      ],
+      "to": [
+        15.0,
+        4.3,
+        8.2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bezel"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "screen",
+      "from": [
+        1.0,
+        4.3,
+        7.94
+      ],
+      "to": [
+        15.0,
+        12.2,
+        8.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#screen"
+        },
+        "east": {
+          "texture": "#bezel"
+        },
+        "south": {
+          "texture": "#bezel"
+        },
+        "west": {
+          "texture": "#bezel"
+        },
+        "up": {
+          "texture": "#bezel"
+        },
+        "down": {
+          "texture": "#bezel"
+        }
+      }
+    },
+    {
+      "name": "rail",
+      "from": [
+        7.5,
+        0,
+        15.85
+      ],
+      "to": [
+        8.5,
+        16,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#case"
+        },
+        "east": {
+          "texture": "#case"
+        },
+        "south": {
+          "texture": "#case"
+        },
+        "west": {
+          "texture": "#case"
+        },
+        "up": {
+          "texture": "#case"
+        },
+        "down": {
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "vesa_foot",
+      "from": [
+        7.6,
+        0,
+        12.6
+      ],
+      "to": [
+        8.4,
+        4.75,
+        13.4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#case"
+        },
+        "east": {
+          "texture": "#case"
+        },
+        "south": {
+          "texture": "#case"
+        },
+        "west": {
+          "texture": "#case"
+        },
+        "up": {
+          "texture": "#case"
+        },
+        "down": {
+          "texture": "#case"
+        }
+      }
+    }
+  ]
+}
