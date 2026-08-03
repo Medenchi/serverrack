@@ -1,6 +1,5 @@
 package com.denchy.serverrack.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -31,9 +30,6 @@ import org.jetbrains.annotations.Nullable;
  * ALERT state = the whole wall shows one giant message instead of matrix rain.
  */
 public class PcWallBlock extends Block {
-    public static final MapCodec<PcWallBlock> CODEC = createCodec(PcWallBlock::new);
-    @Override protected MapCodec<? extends Block> getCodec() { return CODEC; }
-
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
     public static final BooleanProperty ALERT = BooleanProperty.of("alert");
     public static final EnumProperty<PcWallPart> PART = EnumProperty.of("part", PcWallPart.class);

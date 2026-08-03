@@ -1,6 +1,5 @@
 package com.denchy.serverrack.block;
 
-import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -18,7 +17,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -32,9 +30,6 @@ import net.minecraft.world.World;
  * sneak = stand up (vanilla dismount). One ass per chair.
  */
 public class AkChairBlock extends Block {
-    public static final MapCodec<AkChairBlock> CODEC = createCodec(AkChairBlock::new);
-    @Override protected MapCodec<? extends Block> getCodec() { return CODEC; }
-
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
 
     private static final VoxelShape SHAPE = VoxelShapes.union(
@@ -89,29 +84,29 @@ public class AkChairBlock extends Block {
     }
 
     @Override
-    protected ItemActionResult onUse(BlockState state, World world, BlockPos pos,
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos,
                                  PlayerEntity player, BlockHitResult hit) {
         if (player.isSneaking()) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS;
         }
         if (!world.isClient && player instanceof ServerPlayerEntity) {
             ArmorStandEntity seat = SEATS.get(pos);
             if (seat != null) {
                 if (seat.hasPassengers()) {
-                    return ItemActionResult.SUCCESS; // occupied, don't squeeze in
+                    return ActionResult.SUCCESS; // occupied, don't squeeze in
                 }
                 SEATS.remove(pos);
                 seat.discard();
             }
             ArmorStandEntity saddle = createSaddle(world, pos);
             if (saddle == null) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS;
             }
             world.spawnEntity(saddle);
             player.startRiding(saddle, true);
             SEATS.put(pos.toImmutable(), saddle);
         }
-        return ItemActionResult.SUCCESS;
+        return ActionResult.SUCCESS;
     }
 
     @Override

@@ -25,16 +25,12 @@ public final class ModBlocks {
 
     public static final List<Block> RACKS = new ArrayList<>();
 
-    // === Основные блоки ===
     public static ServerRackBlock RACK_BASIC;
     public static BigServerRackBlock RACK_ADVANCED;
     public static MainframeRackBlock RACK_MAINFRAME;
     public static PcWallBlock PC_WALL;
     public static AkMonitorBlock AK_MONITOR;
     public static AkChairBlock AK_CHAIR;
-
-    // Декор полностью удалён (intrusive holders bug)
-    // Rockstar sign остаётся
     public static RockstarSignBlock ROCKSTAR_SIGN;
 
     public static void register() {
@@ -42,14 +38,10 @@ public final class ModBlocks {
         RACK_ADVANCED = registerBig("server_rack_advanced");
         RACK_MAINFRAME = registerMainframe("server_rack_mainframe");
         PC_WALL = registerPcWall("pc_wall");
-
         AK_MONITOR = registerAkMonitor("ak_monitor");
         AK_CHAIR = registerAkChair("ak_chair");
-
         ROCKSTAR_SIGN = registerRockstar("rockstar_sign");
     }
-
-    // === Регистраторы ===
 
     private static AkMonitorBlock registerAkMonitor(String name) {
         AbstractBlock.Settings settings = AbstractBlock.Settings.create()
@@ -122,8 +114,6 @@ public final class ModBlocks {
         Registry.register(Registries.BLOCK, ModId.of(name), block);
         return block;
     }
-
-    // === Вспомогательные методы ===
 
     public record LowerInfo(BlockPos lowerPos, int height) {}
 

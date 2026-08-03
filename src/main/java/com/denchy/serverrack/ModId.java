@@ -9,4 +9,3 @@ public final class ModId {
         return Identifier.of(ServerRackMod.MOD_ID, path);
     }
 }
-// trigger build Mon Aug  3 15:52:36 UTC 2026

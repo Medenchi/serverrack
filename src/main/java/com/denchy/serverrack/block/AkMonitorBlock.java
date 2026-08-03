@@ -1,6 +1,5 @@
 package com.denchy.serverrack.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -25,9 +24,6 @@ import org.jetbrains.annotations.Nullable;
  * 2×1 AK монитор (для GTA-сцены)
  */
 public class AkMonitorBlock extends Block {
-    public static final MapCodec<AkMonitorBlock> CODEC = createCodec(AkMonitorBlock::new);
-    @Override protected MapCodec<? extends Block> getCodec() { return CODEC; }
-
     public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
     public static final BooleanProperty ERROR = BooleanProperty.of("error");
     public static final EnumProperty<AkPart> PART = EnumProperty.of("part", AkPart.class);
