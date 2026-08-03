@@ -18,6 +18,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -88,29 +89,29 @@ public class AkChairBlock extends Block {
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos,
+    protected ItemActionResult onUse(BlockState state, World world, BlockPos pos,
                                  PlayerEntity player, BlockHitResult hit) {
         if (player.isSneaking()) {
-            return ActionResult.PASS;
+            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (!world.isClient && player instanceof ServerPlayerEntity) {
             ArmorStandEntity seat = SEATS.get(pos);
             if (seat != null) {
                 if (seat.hasPassengers()) {
-                    return ActionResult.SUCCESS; // occupied, don't squeeze in
+                    return ItemActionResult.SUCCESS; // occupied, don't squeeze in
                 }
                 SEATS.remove(pos);
                 seat.discard();
             }
             ArmorStandEntity saddle = createSaddle(world, pos);
             if (saddle == null) {
-                return ActionResult.SUCCESS;
+                return ItemActionResult.SUCCESS;
             }
             world.spawnEntity(saddle);
             player.startRiding(saddle, true);
             SEATS.put(pos.toImmutable(), saddle);
         }
-        return ActionResult.SUCCESS;
+        return ItemActionResult.SUCCESS;
     }
 
     @Override
