@@ -53,7 +53,22 @@ public class GribCommand {
                                         broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
                                         c.getSource().sendFeedback(() -> Text.literal("density=" + v), false);
                                         return 1;
-                                    }))));
+                                    })))
+                    .then(CommandManager.literal("set")
+                            .then(CommandManager.argument("stem", IntegerArgumentType.integer(NukeConfig.STEM_MIN, NukeConfig.STEM_MAX))
+                                    .then(CommandManager.argument("cap", IntegerArgumentType.integer(NukeConfig.CAP_MIN, NukeConfig.CAP_MAX))
+                                            .then(CommandManager.argument("ring", IntegerArgumentType.integer(NukeConfig.RING_MIN, NukeConfig.RING_MAX))
+                                                    .then(CommandManager.argument("density", IntegerArgumentType.integer(NukeConfig.DENSITY_MIN, NukeConfig.DENSITY_MAX))
+                                                            .executes(c -> {
+                                                                int stem = IntegerArgumentType.getInteger(c, "stem");
+                                                                int cap = IntegerArgumentType.getInteger(c, "cap");
+                                                                int ring = IntegerArgumentType.getInteger(c, "ring");
+                                                                int dens = IntegerArgumentType.getInteger(c, "density");
+                                                                NukeConfig.set(stem, cap, ring, dens);
+                                                                broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
+                                                                c.getSource().sendFeedback(() -> Text.literal("set " + stem + " " + cap + " " + ring + " " + dens), false);
+                                                                return 1;
+                                                            }))))));
         });
     }
     private static void broadcast(List<ServerPlayerEntity> players) {
