@@ -33,13 +33,9 @@ public final class ModBlocks {
     public static AkMonitorBlock AK_MONITOR;
     public static AkChairBlock AK_CHAIR;
 
-    // === Декор (всегда с facing) ===
-    public static DecorBlock DECOR_MUG;
-    public static DecorBlock DECOR_BIN;
-    public static DecorBlock DECOR_BOARD;
-    public static DecorBlock DECOR_PLANT;
-    public static DecorBlock DECOR_PAPERS;
-    public static DecorBlock DECOR_ROUTER;
+    // Декор удалён из-за бага с intrusive holders
+    // public static DecorBlock DECOR_MUG;
+    // ... и т.д.
 
     public static com.denchy.serverrack.block.rockstar.RockstarSignBlock ROCKSTAR_SIGN;
 
@@ -54,15 +50,9 @@ public final class ModBlocks {
         AK_MONITOR = registerAkMonitor("ak_monitor");
         AK_CHAIR = registerAkChair("ak_chair");
 
-        // Декор — регистрируем нормально
-        DECOR_MUG = registerDecor("decor_mug", VoxelShapes.cuboid(0.3125, 0, 0.3125, 0.625, 0.3125, 0.625));
-        DECOR_BIN = registerDecor("decor_bin", VoxelShapes.cuboid(0.1875, 0, 0.1875, 0.8125, 0.8125, 0.8125));
-        DECOR_BOARD = registerDecor("decor_board", VoxelShapes.cuboid(0.03125, 0.125, 0.875, 0.96875, 0.875, 1.0));
-        DECOR_PLANT = registerDecor("decor_plant", VoxelShapes.cuboid(0.15625, 0, 0.15625, 0.84375, 0.875, 0.84375));
-        DECOR_PAPERS = registerDecor("decor_papers", VoxelShapes.cuboid(0.125, 0, 0.125, 0.875, 0.25, 0.875));
-        DECOR_ROUTER = registerDecor("decor_router", VoxelShapes.union(
-                VoxelShapes.cuboid(0.125, 0, 0.25, 0.875, 0.1875, 0.75),
-                VoxelShapes.cuboid(0.6875, 0, 0.4375, 0.75, 0.625, 0.5)));
+        // Декор отключён
+        // DECOR_MUG = ...
+        // ...
 
         ROCKSTAR_SIGN = registerRockstar("rockstar_sign");
     }

@@ -52,13 +52,6 @@ public final class ModItems {
         // AK module: monitor + gaming chair
         addBlockItem("ak_monitor", ModBlocks.AK_MONITOR);
         addBlockItem("ak_chair", ModBlocks.AK_CHAIR);
-        // Room decor
-        addBlockItem("decor_mug", ModBlocks.DECOR_MUG);
-        addBlockItem("decor_bin", ModBlocks.DECOR_BIN);
-        addBlockItem("decor_board", ModBlocks.DECOR_BOARD);
-        addBlockItem("decor_plant", ModBlocks.DECOR_PLANT);
-        addBlockItem("decor_papers", ModBlocks.DECOR_PAPERS);
-        addBlockItem("decor_router", ModBlocks.DECOR_ROUTER);
         addBlockItem("rockstar_sign", ModBlocks.ROCKSTAR_SIGN);
     }
 }
