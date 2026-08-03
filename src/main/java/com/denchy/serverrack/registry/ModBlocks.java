@@ -78,14 +78,7 @@ public final class ModBlocks {
         return block;
     }
 
-    private static DecorBlock registerDecor(String name, net.minecraft.util.shape.VoxelShape shape) {
-        AbstractBlock.Settings settings = AbstractBlock.Settings.create()
-                .mapColor(MapColor.GRAY).strength(0.5f, 1.0f)
-                .sounds(BlockSoundGroup.WOOD).nonOpaque();
-        DecorBlock block = new DecorBlock(settings, shape);
-        Registry.register(Registries.BLOCK, ModId.of(name), block);
-        return block;
-    }
+    // Decor registration removed due to crash
 
     private static ServerRackBlock registerSmall(String name) {
         AbstractBlock.Settings settings = AbstractBlock.Settings.create()
