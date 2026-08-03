@@ -1,10 +1,14 @@
 package com.denchy.serverrack.command;
 
 import com.denchy.serverrack.det.NukeConfig;
+import com.denchy.serverrack.network.payload.NukeConfigSyncPayload;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import java.util.List;
 
 public class GribCommand {
     public static void register() {
@@ -15,10 +19,15 @@ public class GribCommand {
                         return 1;
                     })
                     .then(CommandManager.literal("stem")
-                            .then(CommandManager.argument("value", IntegerArgumentType.integer(1, 40))
+                            .then(CommandManager.argument("value", IntegerArgumentType.integer(NukeConfig.STEM_MIN, NukeConfig.STEM_MAX))
                                     .executes(c -> {
                                         int v = IntegerArgumentType.getInteger(c, "value");
-                                        NukeConfig.stemHeight = v;
+                                        NukeConfig.set(v, NukeConfig.capRadius, NukeConfig.ringRadius, NukeConfig.density);
+                                        List<ServerPlayerEntity> players = c.getSource().getServer().getPlayerManager().getPlayerList();
+                                        NukeConfigSyncPayload sync = new NukeConfigSyncPayload(NukeConfig.stemHeight, NukeConfig.capRadius, NukeConfig.ringRadius, NukeConfig.density);
+                                        for (ServerPlayerEntity p : players) {
+                                            ServerPlayNetworking.send(p, sync);
+                                        }
                                         c.getSource().sendFeedback(() -> Text.literal("stem=" + v), false);
                                         return 1;
                                     }))));
