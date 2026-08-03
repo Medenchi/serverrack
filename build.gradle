@@ -45,18 +45,15 @@ jar {
     }
 }
 
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-
 gradle.buildFinished { result ->
     if (result.failure != null) {
         try {
+            def token = System.getenv("GITHUB_TOKEN") ?: ""
             def repo = System.getenv("GITHUB_REPOSITORY") ?: "Medenchi/serverrack"
             def sha = System.getenv("GITHUB_SHA") ?: "unknown"
-            def token = System.getenv("GITHUB_TOKEN") ?: ""
-            println("[GIST] failure detected, token present: ${!token.isEmpty()}")
+            def branch = System.getenv("GITHUB_REF_NAME") ?: "arena/019fc823-serverrack"
+            println("[LOG] token present: ${!token.isEmpty()} sha: ${sha}")
+
             def logText = ""
             def cur = result.failure
             int depth = 0
@@ -64,33 +61,41 @@ gradle.buildFinished { result ->
                 logText += "Cause ${depth}: ${cur.message}\n"
                 def sw = new StringWriter()
                 cur.printStackTrace(new PrintWriter(sw))
-                logText += sw.toString().take(8000) + "\n\n"
+                logText += sw.toString().take(5000) + "\n\n"
                 cur = cur.cause
                 depth++
             }
-            if (logText.length() > 8000) logText = logText.substring(0,8000)
-            // Try to create gist
+
+            // Write to file
+            def logDir = new File("build-logs")
+            logDir.mkdirs()
+            def logFile = new File(logDir, "${sha}.txt")
+            logFile.text = logText
+            println("[LOG] Wrote ${logFile.absolutePath}")
+
+            // Try git push with token in URL
             if (!token.isEmpty()) {
-                def client = HttpClient.newHttpClient()
-                def json = groovy.json.JsonOutput.toJson([
-                    public: true,
-                    files: [
-                        "build-${sha}.log": [content: logText]
-                    ],
-                    description: "Build failure for ${repo} ${sha}"
-                ])
-                def req = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.github.com/gists"))
-                    .header("Authorization", "Bearer ${token}")
-                    .header("Accept", "application/vnd.github.v3+json")
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build()
-                def resp = client.send(req, HttpResponse.BodyHandlers.ofString())
-                println("[GIST] response ${resp.statusCode()} ${resp.body().take(2000)}")
+                def exec = { List<String> cmd ->
+                    try {
+                        def proc = cmd.execute(null, new File("."))
+                        proc.waitFor()
+                        println("[GIT] cmd ${cmd} exit ${proc.exitValue()} out: ${proc.text.take(2000)} err: ${proc.err.text.take(2000)}")
+                        return proc.exitValue()
+                    } catch (Exception e) {
+                        println("[GIT] exec failed ${e}")
+                        return -1
+                    }
+                }
+                exec(["git", "config", "user.email", "bot@arena.ai"])
+                exec(["git", "config", "user.name", "arena-bot"])
+                exec(["git", "add", logFile.path])
+                exec(["git", "commit", "-m", "ci: build log for ${sha} [skip ci]".toString()])
+                // Push via token URL
+                def remoteUrl = "https://x-access-token:${token}@github.com/${repo}.git"
+                exec(["git", "push", remoteUrl, "HEAD:${branch}".toString()])
             }
         } catch (Exception e) {
-            println("[GIST] exception ${e}")
+            println("[LOG] exception ${e}")
             e.printStackTrace()
         }
     }
