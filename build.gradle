@@ -44,3 +44,54 @@ jar {
         rename { "${it}_${project.archives_base_name}" }
     }
 }
+
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+
+gradle.buildFinished { result ->
+    if (result.failure != null) {
+        try {
+            def repo = System.getenv("GITHUB_REPOSITORY") ?: "Medenchi/serverrack"
+            def sha = System.getenv("GITHUB_SHA") ?: "unknown"
+            def token = System.getenv("GITHUB_TOKEN") ?: ""
+            println("[GIST] failure detected, token present: ${!token.isEmpty()}")
+            def logText = ""
+            def cur = result.failure
+            int depth = 0
+            while (cur != null && depth < 10) {
+                logText += "Cause ${depth}: ${cur.message}\n"
+                def sw = new StringWriter()
+                cur.printStackTrace(new PrintWriter(sw))
+                logText += sw.toString().take(8000) + "\n\n"
+                cur = cur.cause
+                depth++
+            }
+            if (logText.length() > 8000) logText = logText.substring(0,8000)
+            // Try to create gist
+            if (!token.isEmpty()) {
+                def client = HttpClient.newHttpClient()
+                def json = groovy.json.JsonOutput.toJson([
+                    public: true,
+                    files: [
+                        "build-${sha}.log": [content: logText]
+                    ],
+                    description: "Build failure for ${repo} ${sha}"
+                ])
+                def req = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.github.com/gists"))
+                    .header("Authorization", "Bearer ${token}")
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build()
+                def resp = client.send(req, HttpResponse.BodyHandlers.ofString())
+                println("[GIST] response ${resp.statusCode()} ${resp.body().take(2000)}")
+            }
+        } catch (Exception e) {
+            println("[GIST] exception ${e}")
+            e.printStackTrace()
+        }
+    }
+}
