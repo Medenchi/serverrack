@@ -21,12 +21,14 @@ public class GribCommand {
                     .then(CommandManager.literal("set")
                             .then(CommandManager.argument("a", IntegerArgumentType.integer(1, 40))
                                     .then(CommandManager.argument("b", IntegerArgumentType.integer(1, 40))
-                                            .executes(c -> {
-                                                int a = IntegerArgumentType.getInteger(c, "a");
-                                                int b = IntegerArgumentType.getInteger(c, "b");
-                                                c.getSource().sendFeedback(() -> Text.literal("set " + a + " " + b), false);
-                                                return 1;
-                                            })))));
+                                            .then(CommandManager.argument("c", IntegerArgumentType.integer(1, 40))
+                                                    .executes(c -> {
+                                                        int a = IntegerArgumentType.getInteger(c, "a");
+                                                        int b = IntegerArgumentType.getInteger(c, "b");
+                                                        int cc = IntegerArgumentType.getInteger(c, "c");
+                                                        c.getSource().sendFeedback(() -> Text.literal("set " + a + " " + b + " " + cc), false);
+                                                        return 1;
+                                                    }))))));
         });
     }
 }
