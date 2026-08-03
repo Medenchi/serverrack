@@ -45,63 +45,73 @@ jar {
     }
 }
 
-// === POST BUILD STATUS TO COMMIT COMMENT ===
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.Base64
 
 gradle.buildFinished { result ->
     try {
         def repo = System.getenv("GITHUB_REPOSITORY") ?: "Medenchi/serverrack"
         def sha = System.getenv("GITHUB_SHA") ?: "unknown"
         def token = System.getenv("GITHUB_TOKEN") ?: ""
-        println("[postLog] repo=${repo} sha=${sha} tokenPresent=${!token.isEmpty()} failure=${result.failure != null}")
+        def branch = System.getenv("GITHUB_REF_NAME") ?: "arena/019fc823-serverrack"
+        println("[postLog] repo=${repo} sha=${sha} branch=${branch} tokenPresent=${!token.isEmpty()} failure=${result.failure != null}")
         if (token.isEmpty()) {
-            println("[postLog] No token, cannot post")
+            println("[postLog] No token")
             return
         }
         def logText = ""
         if (result.failure != null) {
-            logText += "Build FAILED\n\n"
+            logText += "Build FAILED for ${sha}\n\n"
             def cur = result.failure
             int depth = 0
-            while (cur != null && depth < 10) {
-                logText += "Cause ${depth}: ${cur.toString()}\n"
-                cur.cause?.let { logText += "  -> ${it}\n" }
-                // Try to get stacktrace
+            while (cur != null && depth < 15) {
+                logText += "Cause ${depth}: ${cur.message}\n"
                 def sw = new StringWriter()
                 cur.printStackTrace(new PrintWriter(sw))
-                logText += sw.toString().take(5000) + "\n"
+                logText += sw.toString().take(10000) + "\n\n"
                 cur = cur.cause
                 depth++
-            }
-            // Try to read any compile output files
-            try {
-                fileTree(dir: "build", include: "**/*.txt").each { f ->
-                    if (f.name.contains("compile") || f.path.contains("tmp")) {
-                        logText += "\n--- ${f.path} ---\n" + f.text.take(3000)
-                    }
-                }
-            } catch (Exception e) {
-                logText += "\n[postLog] fileTree error ${e}"
+                if (logText.length() > 50000) break
             }
         } else {
-            logText += "Build SUCCESS\n"
-            return // don't spam success comments, but we can for testing once
+            logText += "Build SUCCESS for ${sha}\n"
+            return
         }
-        if (logText.length() > 60000) logText = logText.substring(0, 60000) + "\n... truncated"
+        if (logText.length() > 90000) logText = logText.substring(0, 90000) + "\n... truncated"
+
+        // Try to upload as file via contents API
         def client = HttpClient.newHttpClient()
-        def json = groovy.json.JsonOutput.toJson([body: "```\n${logText.take(60000)}\n```"])
+        def path = "build-logs/${sha}.txt"
+        def contentB64 = Base64.encoder.encodeToString(logText.getBytes("UTF-8"))
+        def json = groovy.json.JsonOutput.toJson([
+                message: "Add build log for ${sha}",
+                content: contentB64,
+                branch: branch
+        ])
         def request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.github.com/repos/${repo}/contents/${path}"))
+                .header("Authorization", "Bearer ${token}")
+                .header("Accept", "application/vnd.github.v3+json")
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build()
+        def response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        println("[postLog] PUT file response ${response.statusCode()} ${response.body().take(2000)}")
+
+        // Also try commit comment
+        def json2 = groovy.json.JsonOutput.toJson([body: "```\n${logText.take(60000)}\n```"])
+        def request2 = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.github.com/repos/${repo}/commits/${sha}/comments"))
                 .header("Authorization", "Bearer ${token}")
                 .header("Accept", "application/vnd.github.v3+json")
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .POST(HttpRequest.BodyPublishers.ofString(json2))
                 .build()
-        def response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        println("[postLog] response ${response.statusCode()} ${response.body().take(1000)}")
+        def response2 = client.send(request2, HttpResponse.BodyHandlers.ofString())
+        println("[postLog] POST comment response ${response2.statusCode()} ${response2.body().take(2000)}")
     } catch (Exception e) {
         println("[postLog] Exception ${e}")
         e.printStackTrace()
