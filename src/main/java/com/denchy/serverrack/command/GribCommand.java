@@ -68,7 +68,7 @@ public class GribCommand {
                                                                 broadcast(c.getSource().getServer().getPlayerManager().getPlayerList());
                                                                 c.getSource().sendFeedback(() -> Text.literal("set " + a + " " + b + " " + cc + " " + d), false);
                                                                 return 1;
-                                                            }))))));
+                                                            })))))));
         });
     }
     private static void broadcast(List<ServerPlayerEntity> players) {
