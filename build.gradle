@@ -45,7 +45,7 @@ jar {
     }
 }
 
-// === POST BUILD FAILURE LOG TO COMMIT COMMENT (to bypass blocked artifact/logs download) ===
+// === POST BUILD STATUS TO COMMIT COMMENT ===
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -53,51 +53,57 @@ import java.net.http.HttpResponse
 
 gradle.buildFinished { result ->
     try {
-        def isFailure = result.failure != null
         def repo = System.getenv("GITHUB_REPOSITORY") ?: "Medenchi/serverrack"
         def sha = System.getenv("GITHUB_SHA") ?: "unknown"
-        def token = System.getenv("GITHUB_TOKEN") ?: System.getenv("GH_TOKEN") ?: ""
+        def token = System.getenv("GITHUB_TOKEN") ?: ""
+        println("[postLog] repo=${repo} sha=${sha} tokenPresent=${!token.isEmpty()} failure=${result.failure != null}")
         if (token.isEmpty()) {
-            println("[postLog] No GITHUB_TOKEN, skipping log post")
+            println("[postLog] No token, cannot post")
             return
         }
         def logText = ""
-        if (isFailure) {
-            logText = "Build FAILED for ${sha}\n\nException: ${result.failure?.toString()}\n\n"
-            result.failure?.printStackTrace()
-            // Try to collect compile errors from build directory if any
-            def logFile = file("build/tmp/compileJava/previous-compilation-data.bin")
-            // Instead, we will read from gradle's output? We capture failure cause
-            // Also try to find compile log files
-            def compileLogs = []
-            fileTree(dir: "build", include: "**/*.log").each { f -> compileLogs << f }
-            if (!compileLogs.isEmpty()) {
-                compileLogs.each { f ->
-                    try { logText += "\n--- ${f.path} ---\n" + f.text.take(20000) } catch (Exception e) {}
+        if (result.failure != null) {
+            logText += "Build FAILED\n\n"
+            def cur = result.failure
+            int depth = 0
+            while (cur != null && depth < 10) {
+                logText += "Cause ${depth}: ${cur.toString()}\n"
+                cur.cause?.let { logText += "  -> ${it}\n" }
+                // Try to get stacktrace
+                def sw = new StringWriter()
+                cur.printStackTrace(new PrintWriter(sw))
+                logText += sw.toString().take(5000) + "\n"
+                cur = cur.cause
+                depth++
+            }
+            // Try to read any compile output files
+            try {
+                fileTree(dir: "build", include: "**/*.txt").each { f ->
+                    if (f.name.contains("compile") || f.path.contains("tmp")) {
+                        logText += "\n--- ${f.path} ---\n" + f.text.take(3000)
+                    }
                 }
+            } catch (Exception e) {
+                logText += "\n[postLog] fileTree error ${e}"
             }
         } else {
-            logText = "Build SUCCESS for ${sha}"
-            // don't spam success
-            return
+            logText += "Build SUCCESS\n"
+            return // don't spam success comments, but we can for testing once
         }
-
-        // Truncate to fit GitHub comment limit (65536)
         if (logText.length() > 60000) logText = logText.substring(0, 60000) + "\n... truncated"
-
         def client = HttpClient.newHttpClient()
-        def body = groovy.json.JsonOutput.toJson([body: "```\n${logText}\n```"])
+        def json = groovy.json.JsonOutput.toJson([body: "```\n${logText.take(60000)}\n```"])
         def request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.github.com/repos/${repo}/commits/${sha}/comments"))
                 .header("Authorization", "Bearer ${token}")
                 .header("Accept", "application/vnd.github.v3+json")
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build()
         def response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        println("[postLog] Posted comment, status ${response.statusCode()} body ${response.body().take(500)}")
+        println("[postLog] response ${response.statusCode()} ${response.body().take(1000)}")
     } catch (Exception e) {
-        println("[postLog] Failed to post: ${e}")
+        println("[postLog] Exception ${e}")
         e.printStackTrace()
     }
 }
