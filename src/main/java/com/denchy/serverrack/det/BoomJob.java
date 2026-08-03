@@ -166,15 +166,13 @@ public class BoomJob {
     }
 
     private void sound(Vec3d c, float vol, float pitch) {
-        // NOTE: ENTITY_GENERIC_EXPLODE is RegistryEntry<SoundEvent> - the only
-        // playSound overloads that accept a RegistryEntry are the double-coord ones.
-        world.playSound(null, c.x, c.y, c.z, SoundEvents.ENTITY_GENERIC_EXPLODE,
-                SoundCategory.BLOCKS, vol, pitch);
+        BlockPos bp = BlockPos.ofFloored(c.x, c.y, c.z);
+        world.playSound(null, bp, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, vol, pitch);
     }
 
     private void fireSound(Vec3d c, float vol, float pitch) {
-        world.playSound(null, c.x, c.y, c.z, SoundEvents.BLOCK_FIRE_AMBIENT,
-                SoundCategory.BLOCKS, vol, pitch);
+        BlockPos bp = BlockPos.ofFloored(c.x, c.y, c.z);
+        world.playSound(null, bp, SoundEvents.BLOCK_FIRE_AMBIENT, SoundCategory.BLOCKS, vol, pitch);
     }
 
     protected void boomFx(Vec3d c) {

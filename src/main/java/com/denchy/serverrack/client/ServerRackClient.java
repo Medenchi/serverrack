@@ -275,7 +275,7 @@ public class ServerRackClient implements ClientModInitializer {
         // keep the loop going while standing near the same rack
         if ((lastHumPos == null || !lastHumPos.equals(best)) || time - lastHumGameTime > HUM_PERIOD_TICKS) {
             client.world.playSound(best.getX() + 0.5, best.getY() + 1.0, best.getZ() + 0.5,
-                    SoundEvents.BLOCK_BEACON_AMBIENT, SoundCategory.BLOCKS,
+                    SoundEvents.BLOCK_BEACON_AMBIENT.value(), SoundCategory.BLOCKS,
                     0.22f, 1.55f, true);
             lastHumPos = best;
             lastHumGameTime = time;
