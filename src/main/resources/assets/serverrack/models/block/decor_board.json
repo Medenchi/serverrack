@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "d": "serverrack:block/decor_board",
+    "particle": "serverrack:block/decor_board"
+  },
+  "elements": [
+    {
+      "name": "panel",
+      "from": [
+        0.5,
+        2,
+        14.8
+      ],
+      "to": [
+        15.5,
+        14,
+        15.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      }
+    }
+  ]
+}
