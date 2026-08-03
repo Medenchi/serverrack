@@ -213,7 +213,8 @@ public class BoomJob {
             }
         }
         if (floor == null) return; // no decent ground, waste of a prop
-        if (!world.getEntitiesByClass(ItemFrameEntity.class, Box.enclosing(floor, floor), f -> true).isEmpty()) {
+        Box floorBox = new Box(floor.getX(), floor.getY(), floor.getZ(), floor.getX() + 1, floor.getY() + 1, floor.getZ() + 1);
+        if (!world.getEntitiesByClass(ItemFrameEntity.class, floorBox, f -> true).isEmpty()) {
             return; // one document per spot
         }
         ItemFrameEntity frame = new ItemFrameEntity(world, floor, Direction.UP);
@@ -625,7 +626,7 @@ public class BoomJob {
         private void cleanupAftermath() {
             BlockPos lo = backup.origin.add(-3, -3, -3);
             BlockPos hi = backup.origin.add(backup.sx + 2, backup.sy + 2, backup.sz + 2);
-            Box area = Box.enclosing(lo, hi);
+            Box area = new Box(lo.getX(), lo.getY(), lo.getZ(), hi.getX() + 1, hi.getY() + 1, hi.getZ() + 1);
             for (Entity e : world.getEntitiesByClass(Entity.class, area,
                     en -> en instanceof FallingBlockEntity || en instanceof ItemEntity)) {
                 e.discard();

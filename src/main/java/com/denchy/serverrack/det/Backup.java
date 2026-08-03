@@ -98,7 +98,7 @@ public final class Backup {
         }
 
         List<NbtCompound> ents = new ArrayList<>();
-        Box box = Box.enclosing(min, max); // inclusive both ends = [min, max+1)
+        Box box = new Box(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1); // inclusive both ends = [min, max+1)
         for (Entity e : world.getEntitiesByClass(Entity.class, box,
                 en -> !(en instanceof PlayerEntity) && !(en instanceof MobEntity))) {
             NbtCompound c = new NbtCompound();
